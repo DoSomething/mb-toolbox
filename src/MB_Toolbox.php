@@ -32,23 +32,35 @@ class MB_Toolbox
    *
    * @param array $user
    *   Details about the user to create Drupal account for.
+   *
    *   - $user->email (required)
-   *   - $user->first_name (required)
+   *   - $user->password (required)
+   *   - $user->user_registration_source (required)
+   *
+   *   - $user->first_name (optional)
+   *   - $user->birthdate (optional)
+   *   - $user->birthdate_timestamp (optional)
+   *   - $user->last_name (optional)
    *
    * @return array
    *   Details of the new user account.
    */
   public function createDrupalUser($user) {
 
+    // @todo: Remove condition for user_registration_source, should be required.
+    // Remove password generation and returning the password in method.
     $password = isset($user->password) ? $user->password : $user->first_name . '-Doer' . rand(1, 1000);
+    // Required
     $post = array(
       'email' => $user->email,
       'password' => $password,
+      'user_registration_source' => isset($user->user_registration_source) ? $user->user_registration_source : '',
     );
+
+    // Optional
     if (isset($user->first_name)) {
       $post['first_name'] = $user->first_name;
     }
-
     if (isset($user->birthdate) && strpos($user->birthdate, '/') > 0) {
       $post['birthdate'] = date('Y-m-d', strtotime($user->birthdate));
     }
@@ -60,9 +72,6 @@ class MB_Toolbox
     }
     if (isset($user->last_name)) {
       $post['last_name'] = $user->last_name;
-    }
-    if (isset($user->user_registration_source)) {
-      $post['user_registration_source'] = $user->user_registration_source;
     }
 
     $ch = curl_init();
