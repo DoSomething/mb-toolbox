@@ -30,7 +30,7 @@ class MB_Toolbox
    * Send request to Drupal /api/v1/users end point to create a new user
    * account.
    *
-   * @param array $user
+   * @param object $user
    *   Details about the user to create Drupal account for.
    *
    *   - $user->email (required)
