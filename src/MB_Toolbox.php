@@ -56,6 +56,14 @@ class MB_Toolbox
 
     if (in_array($targetCountyCode, $affiliates)) {
       $foundAffiliate = TRUE;
+      $this->statHat->clearAddedStatNames();
+      $this->statHat->addStatName('isDSAffiliate Found');
+      $this->statHat->reportCount(1);
+    }
+    else {
+      $this->statHat->clearAddedStatNames();
+      $this->statHat->addStatName('isDSAffiliate Not Found');
+      $this->statHat->reportCount(1);
     }
 
     return $foundAffiliate;
