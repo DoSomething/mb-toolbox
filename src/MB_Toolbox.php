@@ -6,6 +6,8 @@
 class MB_Toolbox
 {
 
+  const DRUPAL_API = '/api/v1';
+
   /**
    * Setting from external service to track activity - StatHat.
    *
@@ -153,6 +155,39 @@ class MB_Toolbox
     }
 
     return array($result, $password);
+  }
+
+  /**
+   * Gather current member count via Drupal end point.
+   * https://github.com/DoSomething/dosomething/wiki/API#get-member-count
+   *
+   * POST https://beta.dosomething.org/api/v1/users/get_member_count
+   *
+   * @return string $memberCountFormatted
+   *   The string supplied by the Drupal endpoint /get_member_count or NULL
+   *   on failure.
+   */
+  public function getDSMemberCount() {
+
+    $curlUrl = getenv('DS_DRUPAL_API_HOST');
+    $port = getenv('DS_DRUPAL_API_PORT');
+    if ($port != 0 && is_numeric($port)) {
+      $curlUrl .= ':' . (int) $port;
+    }
+    $curlUrl .= self::DRUPAL_API . '/users/get_member_count';
+
+    // $post value sent in cURL call intentionally empty due to the endpoint
+    // expecting POST rather than GET where there's no POST values expected.
+    $post = array();
+
+    $result = $this->curlPOST($curlUrl, $post);
+    if (isset($result->readable)) {
+      $memberCountFormatted = $result->readable;
+    }
+    else {
+      $memberCountFormatted = NULL;
+    }
+    return $memberCountFormatted;
   }
 
 }
