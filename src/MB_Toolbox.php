@@ -125,7 +125,7 @@ class MB_Toolbox
     if ($port != 0) {
       $drupalAPIUrl .= ':' . $port;
     }
-    $drupalAPIUrl .= '/api/v1/users';
+    $drupalAPIUrl .= self::DRUPAL_API . '/users';
 
     curl_setopt($ch, CURLOPT_URL, $drupalAPIUrl);
     curl_setopt($ch, CURLOPT_POST, 1);
