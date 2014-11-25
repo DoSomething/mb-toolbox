@@ -20,8 +20,8 @@
       "phpunit/phpunit": "3.7.*"
     },
     "autoload": {
-        "psr-0": {
-            "MB_Toolbox": "src/"
+        "psr-4": {
+            "DoSomething\\MB_Toolbox\\": "src"
         }
     }
 }

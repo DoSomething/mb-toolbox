@@ -3,6 +3,8 @@
  * Message Broker ("MB") toolbox class library
  */
 
+namespace DoSomething\MB_Toolbox;
+
 class MB_Toolbox
 {
 
