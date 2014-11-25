@@ -27,6 +27,49 @@ class MB_Toolbox
   }
 
   /**
+   * Test if country code has a  DoSomething affiliate.
+   *
+   * Follow country code convention defined in:
+   * http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements
+   *
+   * @param string $targetCountyCode
+   *   Details about the user to create Drupal account for.
+   *
+   * @return boolean $foundAffiliate
+   *   Test if supplied country code is a DoSomething affiliate country.
+   */
+  public function isDSAffiliate($targetCountyCode) {
+
+    $foundAffiliate = FALSE;
+
+    $affiliates = array(
+      'US', // United States
+      'GB', // United Kingdom
+      'CA', // Canada
+      'ID', // Indonesia
+      'BW', // Botswana
+      'KE', // Kenya
+      'GH', // Ghana
+      'NG', // Nigeria
+      'CD', // Congo, The Democratic Republic of the"
+    );
+
+    if (in_array($targetCountyCode, $affiliates)) {
+      $foundAffiliate = TRUE;
+      $this->statHat->clearAddedStatNames();
+      $this->statHat->addStatName('isDSAffiliate Found');
+      $this->statHat->reportCount(1);
+    }
+    else {
+      $this->statHat->clearAddedStatNames();
+      $this->statHat->addStatName('isDSAffiliate Not Found');
+      $this->statHat->reportCount(1);
+    }
+
+    return $foundAffiliate;
+  }
+
+  /**
    * Send request to Drupal /api/v1/users end point to create a new user
    * account.
    *
