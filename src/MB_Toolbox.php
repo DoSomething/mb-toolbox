@@ -30,7 +30,7 @@ class MB_Toolbox
    * Test if country code has a  DoSomething affiliate.
    *
    * Follow country code convention defined in:
-   * http://dev.maxmind.com/geoip/legacy/codes/iso3166/
+   * http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements
    *
    * @param string $targetCountyCode
    *   Details about the user to create Drupal account for.
