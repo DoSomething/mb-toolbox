@@ -4,6 +4,7 @@
  */
 
 namespace DoSomething\MB_Toolbox;
+use DoSomething\MBStatTracker\StatHat;
 
 class MB_Toolbox
 {
@@ -25,9 +26,9 @@ class MB_Toolbox
    *
    * @return object
    */
-  public function __construct($config = array()) {
+  public function __construct($settings) {
     $this->statHat = new StatHat($settings['stathat_ez_key'], 'MB_Toolbox:');
-    $this->statHat->setIsProduction(FALSE);
+    $this->statHat->setIsProduction(TRUE);
   }
 
   /**
