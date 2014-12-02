@@ -60,7 +60,19 @@ class MB_Toolbox
     );
 
     if (in_array($targetCountyCode, $affiliates)) {
-      $foundAffiliate = TRUE;
+
+      $affiliateURL = array(
+        'US' => 'https://www.dosomething.org',       // United States
+        'GB' => 'https://uk.dosomething.org',        // United Kingdom
+        'CA' => 'https://canada.dosomething.org',    // Canada
+        'ID' => 'https://indonesia.dosomething.org', // Indonesia
+        'BW' => 'https://botswana.dosomething.org',  // Botswana
+        'KE' => 'https://kenya.dosomething.org',     // Kenya
+        'GH' => 'https://ghana.dosomething.org',     // Ghana
+        'NG' => 'https://nigeria.dosomething.org',   // Nigeria
+        'CD' => 'https://congo.dosomething.org',     // Congo, The Democratic Republic of the"
+      );
+      $foundAffiliate['url'] = $affiliateURL[$targetCountyCode];
       $this->statHat->clearAddedStatNames();
       $this->statHat->addStatName('isDSAffiliate Found');
       $this->statHat->reportCount(1);
