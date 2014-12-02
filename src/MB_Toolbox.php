@@ -40,8 +40,9 @@ class MB_Toolbox
    * @param string $targetCountyCode
    *   Details about the user to create Drupal account for.
    *
-   * @return boolean $foundAffiliate
-   *   Test if supplied country code is a DoSomething affiliate country.
+   * @return boolean/array $foundAffiliate
+   *   Test if supplied country code is a DoSomething affiliate country the url
+   *   to the affiliate site is returned vs boolean false if match is not found.
    */
   public function isDSAffiliate($targetCountyCode) {
 
@@ -203,6 +204,34 @@ class MB_Toolbox
       $memberCountFormatted = NULL;
     }
     return $memberCountFormatted;
+  }
+
+  /**
+   * cURL POSTs
+   *
+   * @return object $result
+   *   The results retruned from the cURL call.
+   */
+  private function curlPOST($curlUrl, $post) {
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $curlUrl);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_HTTPHEADER,
+      array(
+        'Content-type: application/json',
+        'Accept: application/json'
+      )
+    );
+    curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, 3);
+    curl_setopt($ch,CURLOPT_TIMEOUT, 20);
+    $jsonResult = curl_exec($ch);
+    $result = json_decode($jsonResult);
+    curl_close($ch);
+
+    return $result;
   }
 
 }
