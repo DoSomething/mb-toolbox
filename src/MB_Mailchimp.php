@@ -7,7 +7,7 @@
 namespace DoSomething\MB_Toolbox;
 use DoSomething\MBStatTracker\StatHat;
 
-class MBC_MailChimp
+class MB_MailChimp
 {
 
   /**
