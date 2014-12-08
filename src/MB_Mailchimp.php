@@ -68,14 +68,11 @@ class MB_MailChimp
    * @param array $composedBatch
    *   The list of email address to be submitted to MailChimp
    *
-   * @param array $mbDeliveryTags
-   *   A list of RabbitMQ delivery tags being processed in batch.
-   *
    * @return array
    *   A list of the RabbitMQ queue entry IDs that have been successfully
    *   submitted to MailChimp.
    */
-  public function submitBatchToMailChimp($composedBatch = array(), $mbDeliveryTags = array()) {
+  public function submitBatchToMailChimp($composedBatch = array()) {
 
     // Debugging
     // $results1 = $MailChimp->call("lists/list", array());
@@ -96,6 +93,7 @@ class MB_MailChimp
       'replace_interests' => FALSE
     ));
 
+    return $results;
   }
 
   /**
@@ -104,14 +102,11 @@ class MB_MailChimp
    * @param array $composedBatch
    *   The list of email address to be submitted to MailChimp
    *
-   * @param array $mbDeliveryTags
-   *   A list of RabbitMQ delivery tags being processed in batch.
-   *
    * @return array
    *   A list of the RabbitMQ queue entry IDs that have been successfully
    *   submitted to MailChimp.
    */
-  public function submitToMailChimp($email = '', $mbDeliveryTag = array()) {
+  public function submitToMailChimp($email = '') {
 
     $results = $this->mailChimp->call("lists/subscribe", array(
       'id' => $this->settings['mailchimp_list_id'],
@@ -125,6 +120,7 @@ class MB_MailChimp
       'send_welcome' => FALSE,
     ));
 
+    return $results;
   }
 
 }
