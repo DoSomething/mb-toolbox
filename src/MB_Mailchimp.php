@@ -75,8 +75,11 @@ class MB_MailChimp
   public function submitBatchToMailChimp($composedBatch = array()) {
 
     // Debugging
-    // $results1 = $MailChimp->call("lists/list", array());
-    // $results2 = $MailChimp->call("lists/interest-groupings", array('id' => 'f2fab1dfd4'));
+    // $results1 = $this->mailChimp->call("lists/list", array());
+
+    // DS Domestic: f2fab1dfd4
+    // Innternational: 8e7844f6dd
+    // $results2 = $this->mailChimp->call("lists/interest-groupings", array('id' => '8e7844f6dd'));
 
     // batchSubscribe($id, $batch, $double_optin=true, $update_existing=false, $replace_interests=true)
     // replace_interests: optional - flag to determine whether we replace the
@@ -99,14 +102,14 @@ class MB_MailChimp
   /**
    * Make single signup submission to MailChimp. Typically used for resubscribes.
    *
-   * @param array $composedBatch
-   *   The list of email address to be submitted to MailChimp
+   * @param array $composedItem
+   *   The the details of an email address to be submitted to MailChimp
    *
    * @return array
    *   A list of the RabbitMQ queue entry IDs that have been successfully
    *   submitted to MailChimp.
    */
-  public function submitToMailChimp($email = '') {
+  public function submitToMailChimp($composedItem = array()) {
 
     $results = $this->mailChimp->call("lists/subscribe", array(
       'id' => $this->settings['mailchimp_list_id'],
