@@ -40,8 +40,8 @@ class MB_Configuration
 
     $this->configSettings = $this->_gatherSettings($source);
 
-    $this->statHat = new StatHat($applicationSettings['stathat_ez_key'], 'messagebroker-config:');
-    $this->statHat->setIsProduction(FALSE);
+    $this->statHat = new StatHat($applicationSettings['stathat_ez_key'], 'MC_Configuration:');
+    $this->statHat->setIsProduction(TRUE);
   }
   
   /**
@@ -60,6 +60,10 @@ class MB_Configuration
       echo 'Error - No exchange settings found.', PHP_EOL;
     }
 
+    $this->statHat->clearAddedStatNames();
+    $this->statHat->addStatName('exchangeSettings');
+    $this->statHat->reportCount(1);
+
     return $settings;
   }
   
@@ -70,9 +74,16 @@ class MB_Configuration
    *   Source can be the path to a file or a URL to an endpoint.
    */
   private function _gatherSettings($source) {
-    
+
+    $this->statHat->clearAddedStatNames();
+    $this->statHat->addStatName('_gatherSettings');
+    $this->statHat->reportCount(1);
+
     if (strpos('http://', $source) !== FALSE) {
       echo 'cURL sources are not currently supported.', PHP_EOL;
+      $this->statHat->clearAddedStatNames();
+      $this->statHat->addStatName('_gatherSettings - cURL sources not supported');
+      $this->statHat->reportCount(1);
     }
     elseif (file_exists($source)) {
         $settings = json_decode(implode(file($source)));
@@ -80,6 +91,9 @@ class MB_Configuration
     }
     else {
       echo 'Source: ' . $source . ' not found.', PHP_EOL;
+      $this->statHat->clearAddedStatNames();
+      $this->statHat->addStatName('_gatherSettings - source not found');
+      $this->statHat->reportCount(1);
     }
 
   }
