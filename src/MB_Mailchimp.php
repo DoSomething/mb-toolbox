@@ -75,17 +75,17 @@ class MB_MailChimp
   public function submitBatchToMailChimp($composedBatch = array()) {
 
     // Debugging
-    // $listsListDebugging = $this->mailChimp->call("lists/list", array());
+    // $results1 = $this->mailChimp->call("lists/list", array());
 
     // DS Domestic: f2fab1dfd4
     // Innternational: 8e7844f6dd
-    // $listsInterestGroupingsDebugging = $this->mailChimp->call("lists/interest-groupings", array('id' => '8e7844f6dd'));
+    // $results2 = $this->mailChimp->call("lists/interest-groupings", array('id' => '8e7844f6dd'));
 
     // batchSubscribe($id, $batch, $double_optin=true, $update_existing=false, $replace_interests=true)
     // replace_interests: optional - flag to determine whether we replace the
     // interest groups with the updated groups provided, or we add the provided
     // groups to the member's interest groups (optional, defaults to true)
-    // Lookup list details including "mailchimp_list_id"
+        // Lookup list details including "mailchimp_list_id"
     // -> 71893 "Do Something Members" is f2fab1dfd4 (who knows why?!?)
 
     $results = $this->mailChimp->call("lists/batch-subscribe", array(
@@ -95,6 +95,10 @@ class MB_MailChimp
       'update_existing' => TRUE,
       'replace_interests' => FALSE
     ));
+
+    $this->statHat->clearAddedStatNames();
+    $this->statHat->addStatName('submitBatchToMailChimp');
+    $this->statHat->reportCount(count($composedBatch));
 
     return $results;
   }
@@ -122,6 +126,10 @@ class MB_MailChimp
       'replace_interests' => FALSE,
       'send_welcome' => FALSE,
     ));
+
+    $this->statHat->clearAddedStatNames();
+    $this->statHat->addStatName('submitToMailChimp');
+    $this->statHat->reportCount(1);
 
     return $results;
   }
