@@ -58,7 +58,6 @@ class MB_Toolbox
     $foundAffiliate = FALSE;
 
     $affiliates = array(
-      'US', // United States
       'GB', // United Kingdom
       'CA', // Canada
       'ID', // Indonesia
@@ -72,7 +71,6 @@ class MB_Toolbox
     if (in_array($targetCountyCode, $affiliates)) {
 
       $affiliateURL = array(
-        'US' => 'https://www.dosomething.org',       // United States
         'GB' => 'https://uk.dosomething.org',        // United Kingdom
         'CA' => 'https://canada.dosomething.org',    // Canada
         'ID' => 'https://indonesia.dosomething.org', // Indonesia
