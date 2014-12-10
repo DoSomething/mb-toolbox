@@ -12,6 +12,13 @@ class MB_Toolbox
   const DRUPAL_API = '/api/v1';
 
   /**
+   * Service settings
+   *
+   * @var array
+   */
+  private $settings;
+
+  /**
    * Setting from external service to track activity - StatHat.
    *
    * @var object
@@ -21,12 +28,14 @@ class MB_Toolbox
   /**
    * Constructor
    *
-   * @param array $config
+   * @param array $settings
    *   Connection and configuration settings common to the application
    *
    * @return object
    */
   public function __construct($settings) {
+    $this->settings = $settings;
+
     $this->statHat = new StatHat($settings['stathat_ez_key'], 'MB_Toolbox:');
     $this->statHat->setIsProduction(TRUE);
   }
@@ -185,8 +194,8 @@ class MB_Toolbox
    */
   public function getDSMemberCount() {
 
-    $curlUrl = getenv('DS_DRUPAL_API_HOST');
-    $port = getenv('DS_DRUPAL_API_PORT');
+    $curlUrlb = $this->settings['ds_drupal_api_host'];
+    $port = $this->settings['ds_drupal_api_port'];
     if ($port != 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }

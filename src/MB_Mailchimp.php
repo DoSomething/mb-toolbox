@@ -42,12 +42,6 @@ class MB_MailChimp
   /**
    * Constructor for MBC_Mailchimp
    *
-   * @param array $credentials
-   *   Secret settings from mb-secure-config.inc
-   *
-   * @param array $config
-   *   Configuration settings from mb-config.inc
-   *
    * @param array $settings
    *   Settings from external services - Mailchimp
    */
