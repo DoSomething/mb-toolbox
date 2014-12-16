@@ -26,6 +26,13 @@ class MB_Toolbox
   private $statHat;
 
   /**
+   * Authenication details from Drupal site
+   *
+   * @var object
+   */
+  private $auth;
+
+  /**
    * Constructor
    *
    * @param array $settings
@@ -35,6 +42,7 @@ class MB_Toolbox
    */
   public function __construct($settings) {
     $this->settings = $settings;
+    $this->auth = NULL;
 
     $this->statHat = new StatHat($settings['stathat_ez_key'], 'MB_Toolbox:');
     $this->statHat->setIsProduction(TRUE);
@@ -115,9 +123,7 @@ class MB_Toolbox
    */
   public function createDrupalUser($user) {
 
-    // @todo: Remove condition for user_registration_source, should be required.
-    // Remove password generation and returning the password in method.
-    $password = isset($user->password) ? $user->password : $user->first_name . '-Doer' . rand(1, 1000);
+    $password = isset($user->password) ? $user->password : "{$user->first_name}-Doer" . rand(1, 1000);
     // Required
     $post = array(
       'email' => $user->email,
@@ -143,35 +149,20 @@ class MB_Toolbox
     }
 
     $ch = curl_init();
-    $drupalAPIUrl = getenv('DS_DRUPAL_API_HOST');
-    $port = getenv('DS_DRUPAL_API_PORT');
+    $drupalAPIUrl = $this->settings['ds_drupal_api_host'];
+    $port = $this->settings['ds_drupal_api_port'];
     if ($port != 0) {
-      $drupalAPIUrl .= ':' . $port;
+      $drupalAPIUrl .= ":{$port}";
     }
-    $drupalAPIUrl .= self::DRUPAL_API . '/users';
-
-    curl_setopt($ch, CURLOPT_URL, $drupalAPIUrl);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_HTTPHEADER,
-      array(
-        'Content-type: application/json',
-        'Accept: application/json'
-      )
-    );
-    curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, 3);
-    curl_setopt($ch,CURLOPT_TIMEOUT, 20);
-    $jsonResult = curl_exec($ch);
-    $result = json_decode($jsonResult);
-    curl_close($ch);
+    $drupalAPIUrl .= '/users';
+    $result = $this->curlPOSTauth($drupalAPIUrl, $post);
 
     $this->statHat->clearAddedStatNames();
     $this->statHat->addStatName('Requested createDrupalUser');
     $this->statHat->reportCount(1);
 
     if (is_array($result)) {
-      echo($user->email . ' already a Drupal user.' . PHP_EOL);
+      echo("{$user->email} already a Drupal user." . PHP_EOL);
       $this->statHat->clearAddedStatNames();
       $this->statHat->addStatName('Requested createDrupalUser - existing user');
       $this->statHat->reportCount(1);
@@ -192,12 +183,12 @@ class MB_Toolbox
    */
   public function getDSMemberCount() {
 
-    $curlUrlb = $this->settings['ds_drupal_api_host'];
+    $curlUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
     if ($port != 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
-    $curlUrl .= self::DRUPAL_API . '/users/get_member_count';
+    $curlUrl .= '/api/v1/users/get_member_count';
 
     // $post value sent in cURL call intentionally empty due to the endpoint
     // expecting POST rather than GET where there's no POST values expected.
@@ -214,7 +205,35 @@ class MB_Toolbox
   }
 
   /**
+   * cURL POSTs with authenication
+   *
+   * @param string $curlUrl
+   *  The URL to POST to. Include domain and path.
+   *
+   * @param array $post
+   *  The values to POST.
+   *
+   * @return object $result
+   *   The results retruned from the cURL call.
+   */
+  private function curlPOSTauth($curlUrl, $post) {
+
+    if (!isset($this->auth)) {
+      $this->authenicate();
+    }
+    $results = $this->curlPOST($curlUrl, $post);
+
+    return $results;
+  }
+
+  /**
    * cURL POSTs
+   *
+   * @param string $curlUrl
+   *  The URL to POST to. Include domain and path.
+   *
+   * @param array $post
+   *  The values to POST.
    *
    * @return object $result
    *   The results retruned from the cURL call.
@@ -223,7 +242,7 @@ class MB_Toolbox
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $curlUrl);
-    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POST, count($post));
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_HTTPHEADER,
@@ -234,11 +253,38 @@ class MB_Toolbox
     );
     curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, 3);
     curl_setopt($ch,CURLOPT_TIMEOUT, 20);
+
+    if (isset($this->auth->token)) {
+      curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization', 'OAuth ' . $this->auth->token));
+    }
+
+    $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $jsonResult = curl_exec($ch);
-    $result = json_decode($jsonResult);
+    $results = json_decode($jsonResult);
     curl_close($ch);
 
-    return $result;
+    return $results;
+  }
+
+  /**
+   * Authenticate for API access
+   */
+  private function authenicate() {
+
+    $post = array(
+      'username' => getenv("DS_DRUPAL_API_USERNAME"),
+      'password' => getenv("DS_DRUPAL_API_PASSWORD")
+    );
+    // @todo: Abstract into it's own function
+    $curlUrl = $this->settings['ds_drupal_api_host'];
+    $port = $this->settings['ds_drupal_api_port'];
+    if ($port != 0 && is_numeric($port)) {
+      $curlUrl .= ':' . (int) $port;
+    }
+    $curlUrl .= '/api/v1/auth/login';
+    $auth = $this->curlPOST($curlUrl, $post);
+
+    $this->auth = $auth;
   }
 
 }
