@@ -219,7 +219,7 @@ class MB_Toolbox
   private function curlPOSTauth($curlUrl, $post) {
 
     if (!isset($this->auth)) {
-      $this->authenicate();
+      $this->authenticate();
     }
     $results = $this->curlPOST($curlUrl, $post);
 
@@ -269,7 +269,7 @@ class MB_Toolbox
   /**
    * Authenticate for API access
    */
-  private function authenicate() {
+  private function authenticate() {
 
     $post = array(
       'username' => getenv("DS_DRUPAL_API_USERNAME"),
