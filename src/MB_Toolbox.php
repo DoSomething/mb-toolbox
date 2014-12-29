@@ -154,7 +154,7 @@ class MB_Toolbox
     if ($port != 0) {
       $drupalAPIUrl .= ":{$port}";
     }
-    $drupalAPIUrl .= '/api/v1/users';
+    $drupalAPIUrl .= self::DRUPAL_API . '/users';
     $result = $this->curlPOSTauth($drupalAPIUrl, $post);
 
     $this->statHat->clearAddedStatNames();
@@ -188,7 +188,7 @@ class MB_Toolbox
     if ($port != 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
-    $curlUrl .= '/api/v1/users/get_member_count';
+    $curlUrl .= self::DRUPAL_API . '/users/get_member_count';
 
     // $post value sent in cURL call intentionally empty due to the endpoint
     // expecting POST rather than GET where there's no POST values expected.
@@ -283,7 +283,7 @@ class MB_Toolbox
     if ($port != 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
-    $curlUrl .= '/api/v1/auth/login';
+    $curlUrl .= self::DRUPAL_API . '/auth/login';
     $auth = $this->curlPOST($curlUrl, $post);
 
     $this->auth = $auth;
