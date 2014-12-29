@@ -218,9 +218,11 @@ class MB_Toolbox
    */
   private function curlPOSTauth($curlUrl, $post) {
 
+/* @todo: Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
       $this->authenticate();
     }
+*/
     $results = $this->curlPOST($curlUrl, $post);
 
     return $results;
