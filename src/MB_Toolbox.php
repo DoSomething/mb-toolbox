@@ -154,7 +154,7 @@ class MB_Toolbox
     if ($port != 0) {
       $drupalAPIUrl .= ":{$port}";
     }
-    $drupalAPIUrl .= '/users';
+    $drupalAPIUrl .= '/api/v1/users';
     $result = $this->curlPOSTauth($drupalAPIUrl, $post);
 
     $this->statHat->clearAddedStatNames();
