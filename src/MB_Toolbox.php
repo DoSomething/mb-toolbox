@@ -155,7 +155,7 @@ class MB_Toolbox
       $drupalAPIUrl .= ":{$port}";
     }
     $drupalAPIUrl .= self::DRUPAL_API . '/users';
-    $result = $this->curlPOSTauth($drupalAPIUrl, $post);
+    $result = $this->curlPOST($drupalAPIUrl, $post);
 
     $this->statHat->clearAddedStatNames();
     $this->statHat->addStatName('Requested createDrupalUser');
@@ -209,20 +209,19 @@ class MB_Toolbox
    *
    * @param string $curlUrl
    *  The URL to POST to. Include domain and path.
-   *
    * @param array $post
    *  The values to POST.
    *
    * @return object $result
    *   The results retruned from the cURL call.
    */
-  private function curlPOSTauth($curlUrl, $post) {
+  public function curlPOSTauth($curlUrl, $post) {
 
-/* @todo: Remove authentication until POST to /api/v1/auth/login is resolved
+    // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
       $this->authenticate();
     }
-*/
+
     $results = $this->curlPOST($curlUrl, $post);
 
     return $results;
@@ -240,29 +239,38 @@ class MB_Toolbox
    * @return object $result
    *   The results retruned from the cURL call.
    */
-  private function curlPOST($curlUrl, $post) {
+  public function curlPOST($curlUrl, $post) {
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $curlUrl);
     curl_setopt($ch, CURLOPT_POST, count($post));
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_HTTPHEADER,
-      array(
-        'Content-type: application/json',
-        'Accept: application/json'
-      )
-    );
     curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, 3);
     curl_setopt($ch,CURLOPT_TIMEOUT, 20);
 
     if (isset($this->auth->token)) {
-      curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization', 'OAuth ' . $this->auth->token));
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json',
+          'X-CSRF-Token: ' . $this->auth->token,
+          'Cookie: ' . $this->auth->session_name . '=' . $this->auth->sessid
+        )
+      );
+    }
+    else {
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json'
+        )
+      );
     }
 
-    $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $jsonResult = curl_exec($ch);
     $results = json_decode($jsonResult);
+    $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
     return $results;
@@ -274,15 +282,18 @@ class MB_Toolbox
   private function authenticate() {
 
     $post = array(
-      'username' => getenv("DS_DRUPAL_API_USERNAME"),
-      'password' => getenv("DS_DRUPAL_API_PASSWORD")
+      'username' => $this->settings['ds_drupal_api_username'],
+      'password' => $this->settings['ds_drupal_api_password'],
     );
+
     // @todo: Abstract into it's own function
     $curlUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
     if ($port != 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
+
+    // https://www.dosomething.org/api/v1/auth/login
     $curlUrl .= self::DRUPAL_API . '/auth/login';
     $auth = $this->curlPOST($curlUrl, $post);
 
