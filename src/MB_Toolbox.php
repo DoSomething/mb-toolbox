@@ -285,7 +285,7 @@ class MB_Toolbox
    */
   private function authenticate() {
 
-    if (isset($this->settings['ds_drupal_api_username']) && $this->settings['ds_drupal_api_password']) {
+    if (!empty($this->settings['ds_drupal_api_username']) && !empty($this->settings['ds_drupal_api_password'])) {
       $post = array(
         'username' => $this->settings['ds_drupal_api_username'],
         'password' => $this->settings['ds_drupal_api_password'],
