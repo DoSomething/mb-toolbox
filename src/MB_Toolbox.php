@@ -26,7 +26,7 @@ class MB_Toolbox
   private $statHat;
 
   /**
-   * Authenication details from Drupal site
+   * Authentication details from Drupal site
    *
    * @var object
    */
@@ -58,7 +58,7 @@ class MB_Toolbox
    *   Details about the user to create Drupal account for.
    *
    * @return boolean/array $foundAffiliate
-   *   Test if supplied country code is a DoSomething affiliate country the url
+   *   Test if supplied country code is a DoSomething affiliate country the URL
    *   to the affiliate site is returned vs boolean false if match is not found.
    */
   public function isDSAffiliate($targetCountyCode) {
@@ -205,7 +205,7 @@ class MB_Toolbox
   }
 
   /**
-   * cURL POSTs with authenication
+   * cURL POSTs with authentication
    *
    * @param string $curlUrl
    *  The URL to POST to. Include domain and path.
@@ -213,7 +213,7 @@ class MB_Toolbox
    *  The values to POST.
    *
    * @return object $result
-   *   The results retruned from the cURL call.
+   *   The results returned from the cURL call.
    */
   public function curlPOSTauth($curlUrl, $post) {
 
@@ -237,7 +237,7 @@ class MB_Toolbox
    *  The values to POST.
    *
    * @return object $result
-   *   The results retruned from the cURL call.
+   *   The results returned from the cURL call.
    */
   public function curlPOST($curlUrl, $post) {
 
@@ -249,7 +249,9 @@ class MB_Toolbox
     curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, 3);
     curl_setopt($ch,CURLOPT_TIMEOUT, 20);
 
-    if (isset($this->auth->token)) {
+    // Only add token and cookie values to header when values are available and
+    // the curlPOSTauth() method is making the POST request.
+    if (isset($this->auth->token) && debug_backtrace(2)[1]['function'] == 'curlPOSTauth') {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
