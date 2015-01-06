@@ -11,13 +11,6 @@ class MB_MailChimp
 {
 
   /**
-   * Access credentials settings
-   *
-   * @var object
-   */
-  private $credentials;
-
-  /**
    * Service settings
    *
    * @var array
