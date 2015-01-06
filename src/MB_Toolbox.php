@@ -283,10 +283,16 @@ class MB_Toolbox
    */
   private function authenticate() {
 
-    $post = array(
-      'username' => $this->settings['ds_drupal_api_username'],
-      'password' => $this->settings['ds_drupal_api_password'],
-    );
+    if (isset($this->settings['ds_drupal_api_username']) && $this->settings['ds_drupal_api_password']) {
+      $post = array(
+        'username' => $this->settings['ds_drupal_api_username'],
+        'password' => $this->settings['ds_drupal_api_password'],
+      );
+    }
+    else {
+      trigger_error("MB_Toolbox->authenticate() : username and/or password not defined.", E_USER_ERROR);
+      exit(0);
+    }
 
     // @todo: Abstract into it's own function
     $curlUrl = $this->settings['ds_drupal_api_host'];
