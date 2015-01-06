@@ -280,6 +280,32 @@ class MB_Toolbox
   }
 
   /**
+   * cURL GETs
+   *
+   * @param string $curlUrl
+   *  The URL to GET from. Include domain and path.
+   *
+   * @return object $result
+   *   The results returned from the cURL call.
+   */
+  public function curlGET($curlUrl) {
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $curlUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+      'Content-type: application/json',
+      'Accept: application/json'
+    ));
+
+    $jsonResult = curl_exec($ch);
+    $results = json_decode($jsonResult);
+    curl_close($ch);
+
+    return $results;
+  }
+
+  /**
    * Authenticate for API access
    */
   private function authenticate() {
