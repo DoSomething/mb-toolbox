@@ -222,7 +222,7 @@ class MB_Toolbox
       $this->authenticate();
     }
 
-    $results = $this->curlPOST($curlUrl, $post);
+    $results = $this->curlPOST($curlUrl, $post, 'curlPOSTauth');
 
     return $results;
   }
@@ -232,14 +232,16 @@ class MB_Toolbox
    *
    * @param string $curlUrl
    *  The URL to POST to. Include domain and path.
-   *
    * @param array $post
    *  The values to POST.
+   * @param string $origin
+   *  Optional method name calling curlPOST. Use curlPOSTauth() to trigger
+   *  sending token and cookie auth values in header.
    *
    * @return object $result
    *   The results returned from the cURL call.
    */
-  public function curlPOST($curlUrl, $post) {
+  public function curlPOST($curlUrl, $post, $origin = '') {
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $curlUrl);
@@ -251,7 +253,7 @@ class MB_Toolbox
 
     // Only add token and cookie values to header when values are available and
     // the curlPOSTauth() method is making the POST request.
-    if (isset($this->auth->token) && debug_backtrace(2)[1]['function'] == 'curlPOSTauth') {
+    if (isset($this->auth->token) && $origin == 'curlPOSTauth') {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
