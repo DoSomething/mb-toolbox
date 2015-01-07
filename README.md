@@ -17,6 +17,7 @@ A collection of classes and related methods that provide common functionality fo
 - curlPOSTauth($curlUrl, $post)
 - curlGET($curlUrl)
 
+
 ####class MB_MailChimp($settings)
 ```
 @param array $settings
@@ -26,8 +27,9 @@ Settings from external services - Mailchimp
 - submitBatchToMailChimp($composedBatch)
 - submitToMailChimp($composedItem)
 
-####class MB_Configuration
 
+####class MB_Configuration
+```
 @param array $source
   The source of configuration settings. This can be from a file or an endpoint.
 @param array $applicationSettings
@@ -35,4 +37,4 @@ Settings from external services - Mailchimp
 ```
 **Methods**
 - exchangeSettings($targetExchange)
-```
+
