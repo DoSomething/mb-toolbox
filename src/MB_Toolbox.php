@@ -162,7 +162,7 @@ class MB_Toolbox
     $this->statHat->reportCount(1);
 
     if (is_array($result)) {
-      echo("{$user->email} already a Drupal user." . PHP_EOL);
+      echo $user->email . 'already a Drupal user.' . PHP_EOL;
       $this->statHat->clearAddedStatNames();
       $this->statHat->addStatName('Requested createDrupalUser - existing user');
       $this->statHat->reportCount(1);
