@@ -43,6 +43,11 @@ class MB_Toolbox
   public function __construct($settings) {
     $this->settings = $settings;
     $this->auth = NULL;
+    
+    // Check for cURL on server
+    if (!is_callable('curl_init')) {
+      throw new Exception("Error - PHP cURL extension is not enabled on the server. cURL is required by many of the methods in the mb-toolbox library.");
+    }
 
     $this->statHat = new StatHat($settings['stathat_ez_key'], 'MB_Toolbox:');
     $this->statHat->setIsProduction(TRUE);
@@ -67,6 +72,7 @@ class MB_Toolbox
 
     $affiliates = array(
       'GB', // United Kingdom
+      'UK', // United Kingdom
       'CA', // Canada
       'ID', // Indonesia
       'BW', // Botswana
@@ -80,6 +86,7 @@ class MB_Toolbox
 
       $affiliateURL = array(
         'GB' => 'https://uk.dosomething.org',        // United Kingdom
+        'UK' => 'https://uk.dosomething.org',        // United Kingdom
         'CA' => 'https://canada.dosomething.org',    // Canada
         'ID' => 'https://indonesia.dosomething.org', // Indonesia
         'BW' => 'https://botswana.dosomething.org',  // Botswana
