@@ -67,6 +67,7 @@ class MB_Toolbox
 
     $affiliates = array(
       'GB', // United Kingdom
+      'UK', // United Kingdom
       'CA', // Canada
       'ID', // Indonesia
       'BW', // Botswana
@@ -80,6 +81,7 @@ class MB_Toolbox
 
       $affiliateURL = array(
         'GB' => 'https://uk.dosomething.org',        // United Kingdom
+        'UK' => 'https://uk.dosomething.org',        // United Kingdom
         'CA' => 'https://canada.dosomething.org',    // Canada
         'ID' => 'https://indonesia.dosomething.org', // Indonesia
         'BW' => 'https://botswana.dosomething.org',  // Botswana
