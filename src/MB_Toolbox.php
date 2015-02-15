@@ -294,7 +294,7 @@ class MB_Toolbox
    * @param array $get
    *  The values to GET.
    * @param boolean $isAuth
-   *  A flag to keep track of the current authencation state.
+   *  A flag to keep track of the current authentication state.
    *
    * @return object $result
    *   The results returned from the cURL call.
@@ -317,7 +317,7 @@ class MB_Toolbox
    * @param string $curlUrl
    *  The URL to GET from. Include domain and path.
    * @param boolean $isAuth
-   *  A flag to keep track of the current authencation state.
+   *  A flag to keep track of the current authentication state.
    *
    * @return object $result
    *   The results returned from the cURL call.
@@ -384,6 +384,44 @@ class MB_Toolbox
     $auth = $this->curlPOST($curlUrl, $post);
 
     $this->auth = $auth;
+  }
+
+   /**
+   * Generate user specific link URL to user subscription setting
+   * (http://subscriptions.dosomething.org) web page. The page is an interface
+   * to allow users to subscribe/unsubscribe to different types of email
+   * messaging.
+   *
+   * @param string $targetEmail
+   *   The email address to generate the subscription URL for.
+   *
+   * @return string $subscription_link
+   *   The URL to the user subscription settings web page. The link includes a
+   *   key md5 hash value to limit page access to authorized users who have
+   *   received an email from the lists the subscription page administers.
+   */
+  public function subscriptionsLinkGenerator($targetEmail) {
+
+    $curlUrl = $this->settings['ds_drupal_api_host'];
+    $port = $this->settings['ds_drupal_api_port'];
+    if ($port != 0 && is_numeric($port)) {
+      $curlUrl .= ':' . (int) $port;
+    }
+    $curlUrl .= self::DRUPAL_API . '/users?parameters[email]=' . $targetEmail;
+
+    $result = $this->curlGETauth($curlUrl);
+    if (isset($result->uid)) {
+      $drupalUID = $result->uid;
+
+      $keyData = $targetEmail . ', ' . $drupalUID . ', ' . date('Y-m-d');
+      $subscription_link = 'http://subscriptions.dosomething.org?email=' . $targetEmail . '&key=' . md5($keyData);
+    }
+    else {
+      echo 'Error making GET request to ' . $curlUrl, PHP_EOL;
+      $subscription_link = FALSE;
+    }
+
+    return $subscription_link;
   }
 
 }
