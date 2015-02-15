@@ -300,11 +300,10 @@ class MB_Toolbox
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $curlUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_HTTPHEADER,
-        array(
-          'Content-type: application/json',
-          'Accept: application/json'
-        ));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+      'Content-type: application/json',
+      'Accept: application/json'
+    ));
 
     $jsonResult = curl_exec($ch);
     $results = json_decode($jsonResult);
