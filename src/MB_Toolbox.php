@@ -287,23 +287,67 @@ class MB_Toolbox
   }
 
   /**
-   * cURL GETs
+   * cURL POSTs with authentication
    *
    * @param string $curlUrl
-   *  The URL to GET from. Include domain and path.
+   *  The URL to POST to. Include domain and path.
+   * @param array $get
+   *  The values to GET.
+   * @param boolean $isAuth
+   *  A flag to keep track of the current authencation state.
    *
    * @return object $result
    *   The results returned from the cURL call.
    */
-  public function curlGET($curlUrl) {
+  public function curlGETauth($curlUrl, $get) {
+
+    // Remove authentication until POST to /api/v1/auth/login is resolved
+    if (!isset($this->auth)) {
+      $this->authenticate();
+    }
+
+    $results = $this->curlGET($curlUrl, TRUE);
+
+    return $results;
+  }
+
+  /**
+   * cURL GETs
+   *
+   * @param string $curlUrl
+   *  The URL to GET from. Include domain and path.
+   * @param boolean $isAuth
+   *  A flag to keep track of the current authencation state.
+   *
+   * @return object $result
+   *   The results returned from the cURL call.
+   */
+  public function curlGET($curlUrl, $isAuth = FALSE) {
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $curlUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-      'Content-type: application/json',
-      'Accept: application/json'
-    ));
+
+   // Only add token and cookie values to header when values are available and
+    // the curlPOSTauth() method is making the POST request.
+    if (isset($this->auth->token) && $isAuth) {
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json',
+          'X-CSRF-Token: ' . $this->auth->token,
+          'Cookie: ' . $this->auth->session_name . '=' . $this->auth->sessid
+        )
+      );
+    }
+    else {
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json'
+        )
+      );
+    }
 
     $jsonResult = curl_exec($ch);
     $results = json_decode($jsonResult);
