@@ -10,6 +10,7 @@ class MB_Toolbox
 {
 
   const DRUPAL_API = '/api/v1';
+  const SUBSCRIPTIONS_URL = 'http://subscriptions.dosomething.org';
 
   /**
    * Service settings
@@ -370,7 +371,7 @@ class MB_Toolbox
       $drupalUID = $result->uid;
 
       $keyData = $targetEmail . ', ' . $drupalUID . ', ' . date('Y-m-d');
-      $subscription_link = 'http://subscriptions.dosomething.org?email=' . $targetEmail . '&key=' . md5($keyData);
+      $subscription_link = self::SUBSCRIPTIONS_URL . '?email=' . $targetEmail . '&key=' . md5($keyData);
     }
     else {
       echo 'Error making GET request to ' . $curlUrl, PHP_EOL;
