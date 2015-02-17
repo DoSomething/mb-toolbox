@@ -287,19 +287,15 @@ class MB_Toolbox
   }
 
   /**
-   * cURL POSTs with authentication
+   * cURL GET with authentication
    *
    * @param string $curlUrl
-   *  The URL to POST to. Include domain and path.
-   * @param array $get
-   *  The values to GET.
-   * @param boolean $isAuth
-   *  A flag to keep track of the current authencation state.
+   *  The URL to GET to. Include domain and path.
    *
    * @return object $result
    *   The results returned from the cURL call.
    */
-  public function curlGETauth($curlUrl, $get) {
+  public function curlGETauth($curlUrl) {
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
