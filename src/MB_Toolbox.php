@@ -159,7 +159,7 @@ class MB_Toolbox
     $ch = curl_init();
     $drupalAPIUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
-    if ($port != 0) {
+    if ($port > 0) {
       $drupalAPIUrl .= ":{$port}";
     }
     $drupalAPIUrl .= self::DRUPAL_API . '/users';
@@ -193,7 +193,7 @@ class MB_Toolbox
 
     $curlUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
-    if ($port != 0 && is_numeric($port)) {
+    if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
     $curlUrl .= self::DRUPAL_API . '/users/get_member_count';
@@ -372,7 +372,7 @@ class MB_Toolbox
     // @todo: Abstract into it's own function
     $curlUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
-    if ($port != 0 && is_numeric($port)) {
+    if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
 
@@ -403,7 +403,7 @@ class MB_Toolbox
 
     $curlUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
-    if ($port != 0 && is_numeric($port)) {
+    if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
     $curlUrl .= self::DRUPAL_API . '/users?parameters[email]=' . $targetEmail;
