@@ -399,6 +399,8 @@ class MB_Toolbox
    */
   public function subscriptionsLinkGenerator($targetEmail) {
 
+    $this->statHat->clearAddedStatNames();
+
     $curlUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
     if ($port != 0 && is_numeric($port)) {
@@ -412,11 +414,16 @@ class MB_Toolbox
 
       $keyData = $targetEmail . ', ' . $drupalUID . ', ' . date('Y-m-d');
       $subscription_link = self::SUBSCRIPTIONS_URL . '?email=' . $targetEmail . '&key=' . md5($keyData);
+
+      $this->statHat->addStatName('subscriptionsLinkGenerator Success');
     }
     else {
       echo 'Error making GET request to ' . $curlUrl, PHP_EOL;
       $subscription_link = FALSE;
+
+      $this->statHat->addStatName('subscriptionsLinkGenerator ERROR');
     }
+    $this->statHat->reportCount(1);
 
     return $subscription_link;
   }
