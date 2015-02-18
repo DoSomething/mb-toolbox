@@ -159,7 +159,7 @@ class MB_Toolbox
     $ch = curl_init();
     $drupalAPIUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
-    if ($port > 0) {
+    if ($port > 0 && is_numeric($port)) {
       $drupalAPIUrl .= ":{$port}";
     }
     $drupalAPIUrl .= self::DRUPAL_API . '/users';
