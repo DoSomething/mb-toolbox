@@ -10,7 +10,6 @@ class MB_Toolbox
 {
 
   const DRUPAL_API = '/api/v1';
-  const SUBSCRIPTIONS_URL = 'http://subscriptions.dosomething.org';
 
   /**
    * Service settings
@@ -159,7 +158,7 @@ class MB_Toolbox
     $ch = curl_init();
     $drupalAPIUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
-    if ($port > 0) {
+    if ($port != 0) {
       $drupalAPIUrl .= ":{$port}";
     }
     $drupalAPIUrl .= self::DRUPAL_API . '/users';
@@ -193,7 +192,7 @@ class MB_Toolbox
 
     $curlUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
-    if ($port > 0 && is_numeric($port)) {
+    if ($port != 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
     $curlUrl .= self::DRUPAL_API . '/users/get_member_count';
@@ -372,7 +371,7 @@ class MB_Toolbox
     // @todo: Abstract into it's own function
     $curlUrl = $this->settings['ds_drupal_api_host'];
     $port = $this->settings['ds_drupal_api_port'];
-    if ($port > 0 && is_numeric($port)) {
+    if ($port != 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
 
@@ -381,51 +380,6 @@ class MB_Toolbox
     $auth = $this->curlPOST($curlUrl, $post);
 
     $this->auth = $auth;
-  }
-
-   /**
-   * Generate user specific link URL to user subscription setting
-   * (http://subscriptions.dosomething.org) web page. The page is an interface
-   * to allow users to subscribe/unsubscribe to different types of email
-   * messaging.
-   *
-   * @param string $targetEmail
-   *   The email address to generate the subscription URL for.
-   *
-   * @return string $subscription_link
-   *   The URL to the user subscription settings web page. The link includes a
-   *   key md5 hash value to limit page access to authorized users who have
-   *   received an email from the lists the subscription page administers.
-   */
-  public function subscriptionsLinkGenerator($targetEmail) {
-
-    $this->statHat->clearAddedStatNames();
-
-    $curlUrl = $this->settings['ds_drupal_api_host'];
-    $port = $this->settings['ds_drupal_api_port'];
-    if ($port > 0 && is_numeric($port)) {
-      $curlUrl .= ':' . (int) $port;
-    }
-    $curlUrl .= self::DRUPAL_API . '/users?parameters[email]=' . $targetEmail;
-
-    $result = $this->curlGETauth($curlUrl);
-    if (isset($result->uid)) {
-      $drupalUID = $result->uid;
-
-      $keyData = $targetEmail . ', ' . $drupalUID . ', ' . date('Y-m-d');
-      $subscription_link = self::SUBSCRIPTIONS_URL . '?email=' . $targetEmail . '&key=' . md5($keyData);
-
-      $this->statHat->addStatName('subscriptionsLinkGenerator Success');
-    }
-    else {
-      echo 'Error making GET request to ' . $curlUrl, PHP_EOL;
-      $subscription_link = FALSE;
-
-      $this->statHat->addStatName('subscriptionsLinkGenerator ERROR');
-    }
-    $this->statHat->reportCount(1);
-
-    return $subscription_link;
   }
 
 }
