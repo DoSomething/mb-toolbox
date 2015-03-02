@@ -10,7 +10,9 @@ class MB_Toolbox
 {
 
   const DRUPAL_API = '/api/v1';
-  const SUBSCRIPTIONS_URL = 'http://subscriptions.dosomething.org';
+  // const SUBSCRIPTIONS_URL = 'http://subscriptions.dosomething.org';
+  const SUBSCRIPTIONS_URL = 'http://10.241.0.20';
+  const SUBSCRIPTIONS_PORT = 3000;
 
   /**
    * Service settings
@@ -406,11 +408,11 @@ class MB_Toolbox
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
-    $curlUrl .= self::DRUPAL_API . '/users?parameters[email]=' . $targetEmail;
+    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' . $targetEmail;
 
     $result = $this->curlGETauth($curlUrl);
-    if (isset($result->uid)) {
-      $drupalUID = $result->uid;
+    if (isset($result[0]->uid)) {
+      $drupalUID = $result[0]->uid;
 
       $keyData = $targetEmail . ', ' . $drupalUID . ', ' . date('Y-m-d');
       $subscription_link = self::SUBSCRIPTIONS_URL . '?email=' . $targetEmail . '&key=' . md5($keyData);
