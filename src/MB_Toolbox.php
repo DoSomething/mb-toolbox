@@ -415,19 +415,19 @@ class MB_Toolbox
       $drupalUID = $result[0]->uid;
 
       $keyData = $targetEmail . ', ' . $drupalUID . ', ' . date('Y-m-d');
-      $subscription_link = self::SUBSCRIPTIONS_URL . '?email=' . $targetEmail . '&key=' . md5($keyData);
+      $subscriptionLink = self::SUBSCRIPTIONS_URL . '?email=' . urlencode($targetEmail) . '&key=' . md5($keyData);
 
       $this->statHat->addStatName('subscriptionsLinkGenerator Success');
     }
     else {
       echo 'Error making GET request to ' . $curlUrl, PHP_EOL;
-      $subscription_link = FALSE;
+      $subscriptionLink = FALSE;
 
       $this->statHat->addStatName('subscriptionsLinkGenerator ERROR');
     }
     $this->statHat->reportCount(1);
 
-    return $subscription_link;
+    return $subscriptionLink;
   }
 
 }
