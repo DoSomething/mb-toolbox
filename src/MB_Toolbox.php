@@ -9,11 +9,6 @@ use DoSomething\MBStatTracker\StatHat;
 class MB_Toolbox
 {
 
-  const DRUPAL_API = '/api/v1';
-  // const SUBSCRIPTIONS_URL = 'http://subscriptions.dosomething.org';
-  const SUBSCRIPTIONS_URL = 'http://10.241.0.20';
-  const SUBSCRIPTIONS_PORT = 3000;
-
   /**
    * Service settings
    *
@@ -414,8 +409,18 @@ class MB_Toolbox
     if (isset($result[0]->uid)) {
       $drupalUID = $result[0]->uid;
 
-      $keyData = $targetEmail . ', ' . $drupalUID . ', ' . date('Y-m-d');
-      $subscriptionLink = self::SUBSCRIPTIONS_URL . '?email=' . urlencode($targetEmail) . '&key=' . md5($keyData);
+      if (strlen($this->settings['subscriptions_url']) > 0) {
+        $subscriptionsUrl = $this->settings['subscriptions_url'];
+      }
+      else {
+        $subscriptionsUrl = $this->settings['subscriptions_ip'];
+      }
+      $port = $this->settings['subscriptions_port'];
+      if ($port > 0 && is_numeric($port)) {
+        $subscriptionsUrl .= ':' . (int) $port;
+      }
+      $keyData = urlencode($targetEmail) . ', ' . $drupalUID . ', ' . date('Y-m-d');
+      $subscriptionLink = $subscriptionsUrl  . '?email=' . urlencode($targetEmail) . '&key=' . md5($keyData);
 
       $this->statHat->addStatName('subscriptionsLinkGenerator Success');
     }
