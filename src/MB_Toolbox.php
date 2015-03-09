@@ -41,7 +41,7 @@ class MB_Toolbox
   public function __construct($settings) {
     $this->settings = $settings;
     $this->auth = NULL;
-    
+
     // Check for cURL on server
     if (!is_callable('curl_init')) {
       throw new Exception("Error - PHP cURL extension is not enabled on the server. cURL is required by many of the methods in the mb-toolbox library.");
@@ -175,6 +175,40 @@ class MB_Toolbox
 
     return array($result, $password);
   }
+
+  /**
+   * Get the users password reset link via Drupal end point.
+   * https://github.com/DoSomething/dosomething/wiki/API#get-password-reset-url
+   *
+   * POST https://beta.dosomething.org/api/v1/users/[uid]/password_reset_url
+   *
+   * @param int $uid
+   *    UID of the user were getting the reset URL for.
+   *
+   * @return string $resetUrl
+   *    The string supplied by the Drupal endpoint /password_reset_url or NULL on failure
+   */
+   public function getPasswordResetURL($uid) {
+     $curlUrl = $this->settings['ds_drupal_api_host'];
+     $port = $this->settings['ds_drupal_api_port'];
+     if ($port > 0 && is_numeric($port)) {
+       $curlUrl .= ':' . (int) $port;
+     }
+     $curlUrl .= self::DRUPAL_API . '/users/' . $uid . '/password_reset_url';
+
+     // $post value sent in cURL call intentionally empty due to the endpoint
+     // expecting POST rather than GET where there's no POST values expected.
+     $post = array();
+
+     $result = $this->curlPOSTauth($curlUrl, $post);
+     if (isset($result->readable)) {
+       $resetUrl = $result->readable;
+     }
+     else {
+       $resetUrl = NULL;
+     }
+     return $resetUrl;
+   }
 
   /**
    * Gather current member count via Drupal end point.
