@@ -12,11 +12,13 @@ A collection of classes and related methods that provide common functionality fo
 **Methods**
 - isDSAffiliate($targetCountyCode)
 - createDrupalUser($user)
+- getPasswordResetURL($uid)
 - getDSMemberCount()
+- subscriptionsLinkGenerator($targetEmail)
 - curlPOST($curlUrl, $post)
 - curlPOSTauth($curlUrl, $post)
 - curlGET($curlUrl)
-
+- curlGETauth($curlUrl)
 
 ####class MB_MailChimp($settings)
 ```

@@ -244,26 +244,58 @@ class MB_Toolbox
   }
 
   /**
-   * cURL POSTs with authentication
+   * Generate user specific link URL to user subscription setting
+   * (http://subscriptions.dosomething.org) web page. The page is an interface
+   * to allow users to subscribe/unsubscribe to different types of email
+   * messaging.
    *
-   * @param string $curlUrl
-   *  The URL to POST to. Include domain and path.
-   * @param array $post
-   *  The values to POST.
+   * @param string $targetEmail
+   *   The email address to generate the subscription URL for.
    *
-   * @return object $result
-   *   The results returned from the cURL call.
+   * @return string $subscription_link
+   *   The URL to the user subscription settings web page. The link includes a
+   *   key md5 hash value to limit page access to authorized users who have
+   *   received an email from the lists the subscription page administers.
    */
-  public function curlPOSTauth($curlUrl, $post) {
+  public function subscriptionsLinkGenerator($targetEmail) {
 
-    // Remove authentication until POST to /api/v1/auth/login is resolved
-    if (!isset($this->auth)) {
-      $this->authenticate();
+    $this->statHat->clearAddedStatNames();
+
+    $curlUrl = $this->settings['ds_drupal_api_host'];
+    $port = $this->settings['ds_drupal_api_port'];
+    if ($port > 0 && is_numeric($port)) {
+      $curlUrl .= ':' . (int) $port;
     }
+    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' . $targetEmail;
 
-    $results = $this->curlPOST($curlUrl, $post, TRUE);
+    $result = $this->curlGETauth($curlUrl);
+    if (isset($result[0]->uid)) {
+      $drupalUID = $result[0]->uid;
 
-    return $results;
+      if (strlen($this->settings['subscriptions_url']) > 0) {
+        $subscriptionsUrl = $this->settings['subscriptions_url'];
+      }
+      else {
+        $subscriptionsUrl = $this->settings['subscriptions_ip'];
+      }
+      $port = $this->settings['subscriptions_port'];
+      if ($port > 0 && is_numeric($port)) {
+        $subscriptionsUrl .= ':' . (int) $port;
+      }
+      $keyData = urlencode($targetEmail) . ', ' . $drupalUID . ', ' . date('Y-m-d');
+      $subscriptionLink = $subscriptionsUrl  . '?email=' . urlencode($targetEmail) . '&key=' . md5($keyData);
+
+      $this->statHat->addStatName('subscriptionsLinkGenerator Success');
+    }
+    else {
+      echo 'Error making GET request to ' . $curlUrl, PHP_EOL;
+      $subscriptionLink = FALSE;
+
+      $this->statHat->addStatName('subscriptionsLinkGenerator ERROR');
+    }
+    $this->statHat->reportCount(1);
+
+    return $subscriptionLink;
   }
 
   /**
@@ -319,22 +351,24 @@ class MB_Toolbox
   }
 
   /**
-   * cURL GET with authentication
+   * cURL POSTs with authentication
    *
    * @param string $curlUrl
-   *  The URL to GET to. Include domain and path.
+   *  The URL to POST to. Include domain and path.
+   * @param array $post
+   *  The values to POST.
    *
    * @return object $result
    *   The results returned from the cURL call.
    */
-  public function curlGETauth($curlUrl) {
+  public function curlPOSTauth($curlUrl, $post) {
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
       $this->authenticate();
     }
 
-    $results = $this->curlGET($curlUrl, TRUE);
+    $results = $this->curlPOST($curlUrl, $post, TRUE);
 
     return $results;
   }
@@ -385,6 +419,27 @@ class MB_Toolbox
   }
 
   /**
+   * cURL GET with authentication
+   *
+   * @param string $curlUrl
+   *  The URL to GET to. Include domain and path.
+   *
+   * @return object $result
+   *   The results returned from the cURL call.
+   */
+  public function curlGETauth($curlUrl) {
+
+    // Remove authentication until POST to /api/v1/auth/login is resolved
+    if (!isset($this->auth)) {
+      $this->authenticate();
+    }
+
+    $results = $this->curlGET($curlUrl, TRUE);
+
+    return $results;
+  }
+
+  /**
    * Authenticate for API access
    */
   private function authenticate() {
@@ -412,61 +467,6 @@ class MB_Toolbox
     $auth = $this->curlPOST($curlUrl, $post);
 
     $this->auth = $auth;
-  }
-
-   /**
-   * Generate user specific link URL to user subscription setting
-   * (http://subscriptions.dosomething.org) web page. The page is an interface
-   * to allow users to subscribe/unsubscribe to different types of email
-   * messaging.
-   *
-   * @param string $targetEmail
-   *   The email address to generate the subscription URL for.
-   *
-   * @return string $subscription_link
-   *   The URL to the user subscription settings web page. The link includes a
-   *   key md5 hash value to limit page access to authorized users who have
-   *   received an email from the lists the subscription page administers.
-   */
-  public function subscriptionsLinkGenerator($targetEmail) {
-
-    $this->statHat->clearAddedStatNames();
-
-    $curlUrl = $this->settings['ds_drupal_api_host'];
-    $port = $this->settings['ds_drupal_api_port'];
-    if ($port > 0 && is_numeric($port)) {
-      $curlUrl .= ':' . (int) $port;
-    }
-    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' . $targetEmail;
-
-    $result = $this->curlGETauth($curlUrl);
-    if (isset($result[0]->uid)) {
-      $drupalUID = $result[0]->uid;
-
-      if (strlen($this->settings['subscriptions_url']) > 0) {
-        $subscriptionsUrl = $this->settings['subscriptions_url'];
-      }
-      else {
-        $subscriptionsUrl = $this->settings['subscriptions_ip'];
-      }
-      $port = $this->settings['subscriptions_port'];
-      if ($port > 0 && is_numeric($port)) {
-        $subscriptionsUrl .= ':' . (int) $port;
-      }
-      $keyData = urlencode($targetEmail) . ', ' . $drupalUID . ', ' . date('Y-m-d');
-      $subscriptionLink = $subscriptionsUrl  . '?email=' . urlencode($targetEmail) . '&key=' . md5($keyData);
-
-      $this->statHat->addStatName('subscriptionsLinkGenerator Success');
-    }
-    else {
-      echo 'Error making GET request to ' . $curlUrl, PHP_EOL;
-      $subscriptionLink = FALSE;
-
-      $this->statHat->addStatName('subscriptionsLinkGenerator ERROR');
-    }
-    $this->statHat->reportCount(1);
-
-    return $subscriptionLink;
   }
 
 }
