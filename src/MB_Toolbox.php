@@ -190,7 +190,7 @@ class MB_Toolbox
    * @param int $uid
    *    UID of the user were getting the reset URL for.
    *
-   * @return string $passwordResetUrl
+   * @return string $resetUrl
    *    The string supplied by the Drupal endpoint /password_reset_url or NULL on failure
    */
    public function getPasswordResetURL($uid) {
@@ -199,7 +199,7 @@ class MB_Toolbox
      if ($port > 0 && is_numeric($port)) {
        $curlUrl .= ':' . (int) $port;
      }
-     $curlUrl .= self::DRUPAL_API . '/users' . $uid . '/password_reset_url';
+     $curlUrl .= self::DRUPAL_API . '/users/' . $uid . '/password_reset_url';
 
      // $post value sent in cURL call intentionally empty due to the endpoint
      // expecting POST rather than GET where there's no POST values expected.
