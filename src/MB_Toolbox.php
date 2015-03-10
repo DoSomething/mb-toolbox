@@ -283,7 +283,7 @@ class MB_Toolbox
         $subscriptionsUrl .= ':' . (int) $port;
       }
       $keyData = urlencode($targetEmail) . ', ' . $drupalUID . ', ' . date('Y-m-d');
-      $subscriptionLink = $subscriptionsUrl  . '?email=' . urlencode($targetEmail) . '&key=' . md5($keyData);
+      $subscriptionLink = $subscriptionsUrl  . '?targetEmail=' . urlencode($targetEmail) . '&key=' . md5($keyData);
 
       $this->statHat->addStatName('subscriptionsLinkGenerator Success');
     }
