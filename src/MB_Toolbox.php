@@ -9,6 +9,8 @@ use DoSomething\MBStatTracker\StatHat;
 class MB_Toolbox
 {
 
+  const DRUPAL_API = '/api/v1';
+
   /**
    * Service settings
    *
