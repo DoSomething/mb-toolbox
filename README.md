@@ -40,3 +40,7 @@ Settings from external services - Mailchimp
 **Methods**
 - exchangeSettings($targetExchange)
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/DoSomething/mb-toolbox/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
