@@ -382,18 +382,14 @@ class MB_Toolbox
    *  The URL to GET from. Include domain and path.
    * @param boolean $isAuth
    *  Optional flag to keep track of the current authencation state.
-   * @return boolean $encode
-   *  Optional encode request to support special characters.
+   *
+   * @return boolean $results
+   *  Response from cURL GET request.
    *
    * @return object $result
    *   The results returned from the cURL call.
    */
-  public function curlGET($curlUrl, $isAuth = FALSE, $encode = FALSE) {
-
-    // Add encoding to support special characters
-    if ($encode) {
-      $curlUrl = urlencode($curlUrl);
-    }
+  public function curlGET($curlUrl, $isAuth = FALSE) {
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $curlUrl);
@@ -432,20 +428,18 @@ class MB_Toolbox
    *
    * @param string $curlUrl
    *  The URL to GET to. Include domain and path.
-   * @return boolean $encode
-   *   Optional encode request to support special characters.
    *
    * @return object $result
    *   The results returned from the cURL call.
    */
-  public function curlGETauth($curlUrl, $encode = FALSE) {
+  public function curlGETauth($curlUrl) {
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
       $this->authenticate();
     }
 
-    $results = $this->curlGET($curlUrl, TRUE, $encode);
+    $results = $this->curlGET($curlUrl, TRUE);
 
     return $results;
   }
@@ -492,7 +486,7 @@ class MB_Toolbox
     $jsonResult = curl_exec($ch);
     curl_close($ch);
 
-    return $results;
+    return $jsonResult;
   }
 
   /**
