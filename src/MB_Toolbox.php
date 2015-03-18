@@ -381,7 +381,10 @@ class MB_Toolbox
    * @param string $curlUrl
    *  The URL to GET from. Include domain and path.
    * @param boolean $isAuth
-   *  A flag to keep track of the current authencation state.
+   *  Optional flag to keep track of the current authencation state.
+   *
+   * @return boolean $results
+   *  Response from cURL GET request.
    *
    * @return object $result
    *   The results returned from the cURL call.
@@ -439,6 +442,51 @@ class MB_Toolbox
     $results = $this->curlGET($curlUrl, TRUE);
 
     return $results;
+  }
+
+  /**
+   * cURL DELETEs
+   *
+   * @param string $curlUrl
+   *  The URL to GET from. Include domain and path.
+   * @param boolean $isAuth
+   *  A flag to keep track of the current authencation state.
+   *
+   * @return object $result
+   *   The results returned from the cURL call.
+   */
+  public function curlDELETE($curlUrl, $isAuth = FALSE) {
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $curlUrl);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+    // Only add token and cookie values to header when values are available and
+    // the curlDELETEauth() method is making the POST request.
+    if (isset($this->auth->token) && $isAuth) {
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json',
+          'X-CSRF-Token: ' . $this->auth->token,
+          'Cookie: ' . $this->auth->session_name . '=' . $this->auth->sessid
+        )
+      );
+    }
+    else {
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json'
+        )
+      );
+    }
+
+    $jsonResult = curl_exec($ch);
+    curl_close($ch);
+
+    return $jsonResult;
   }
 
   /**
