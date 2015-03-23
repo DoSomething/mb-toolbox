@@ -268,7 +268,7 @@ class MB_Toolbox
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
-    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' . $targetEmail;
+    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' .  urlencode($targetEmail);
 
     $result = $this->curlGETauth($curlUrl);
     if (isset($result[0]->uid)) {
