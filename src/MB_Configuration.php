@@ -38,10 +38,10 @@ class MB_Configuration
    */
   public function __construct($source, $applicationSettings) {
 
-    $this->configSettings = $this->_gatherSettings($source);
-
     $this->statHat = new StatHat($applicationSettings['stathat_ez_key'], 'MC_Configuration:');
     $this->statHat->setIsProduction(TRUE);
+
+    $this->configSettings = $this->_gatherSettings($source);
   }
   
   /**
