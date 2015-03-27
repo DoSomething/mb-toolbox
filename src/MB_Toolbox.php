@@ -240,7 +240,7 @@ class MB_Toolbox
       $memberCountFormatted = $result->readable;
     }
     else {
-      $memberCountFormatted = NULL;
+      $memberCountFormatted = 'millions of';
     }
     return $memberCountFormatted;
   }
