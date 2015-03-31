@@ -367,7 +367,7 @@ class MB_Toolbox
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
-      $this->authenticate();
+      $this->authenticate($curlUrl);
     }
 
     $results = $this->curlPOST($curlUrl, $post, TRUE);
@@ -436,7 +436,7 @@ class MB_Toolbox
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
-      $this->authenticate();
+      $this->authenticate($curlUrl);
     }
 
     $results = $this->curlGET($curlUrl, TRUE);
@@ -491,8 +491,12 @@ class MB_Toolbox
 
   /**
    * Authenticate for API access
+   *
+   * @param string $target
+   *  The URL to authenticate towards. The base of the $target is used to define
+   *  where to make the authentication request.
    */
-  private function authenticate() {
+  private function authenticate($target) {
 
     if (!empty($this->settings['ds_drupal_api_username']) && !empty($this->settings['ds_drupal_api_password'])) {
       $post = array(
