@@ -335,6 +335,16 @@ class MB_Toolbox
         )
       );
     }
+    elseif (strpos($curlURL, 'api.dosomething') !== FALSE) {
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json',
+          'X-DS-Application-Id: ' . $this->settings['northstar_api_id'],
+          'X-DS-REST-API-Key: ' . $this->settings['northstar_api_key'],
+        )
+      );
+    }
     else {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
