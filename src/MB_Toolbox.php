@@ -335,7 +335,7 @@ class MB_Toolbox
         )
       );
     }
-    elseif (strpos($curlURL, 'api.dosomething') !== FALSE && isset($this->settings['northstar_api_id']) && isset($this->settings['northstar_api_key'])) {
+    elseif (strpos($curlUrl, 'api.dosomething') !== FALSE && isset($this->settings['northstar_api_id']) && isset($this->settings['northstar_api_key'])) {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
