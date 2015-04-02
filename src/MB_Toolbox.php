@@ -335,7 +335,7 @@ class MB_Toolbox
         )
       );
     }
-    elseif (strpos($curlURL, 'api.dosomething') !== FALSE) {
+    elseif (strpos($curlURL, 'api.dosomething') !== FALSE && isset($this->settings['northstar_api_id']) && isset($this->settings['northstar_api_key'])) {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -344,6 +344,9 @@ class MB_Toolbox
           'X-DS-REST-API-Key: ' . $this->settings['northstar_api_key'],
         )
       );
+    }
+    elseif (strpos($curlURL, 'api.dosomething') !== FALSE) {
+      trigger_error("MB_Toolbox->curlPOST() : Northstar settings not defined.", E_USER_ERROR);
     }
     else {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
