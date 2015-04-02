@@ -345,7 +345,7 @@ class MB_Toolbox
         )
       );
     }
-    elseif (strpos($curlURL, 'api.dosomething') !== FALSE) {
+    elseif (strpos($curlUrl, 'api.dosomething') !== FALSE) {
       trigger_error("MB_Toolbox->curlPOST() : Northstar settings not defined.", E_USER_ERROR);
     }
     else {
@@ -358,8 +358,8 @@ class MB_Toolbox
     }
 
     $jsonResult = curl_exec($ch);
-    $results = json_decode($jsonResult);
-    $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $results[0] = json_decode($jsonResult);
+    $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
     return $results;
