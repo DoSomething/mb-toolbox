@@ -263,16 +263,16 @@ class MB_Toolbox
 
     $this->statHat->clearAddedStatNames();
 
-    $curlUrl = $this->settings['ds_drupal_api_host'];
-    $port = $this->settings['ds_drupal_api_port'];
+    $curlUrl = $this->settings['ds_user_api_host'];
+    $port = $this->settings['ds_user_api_port'];
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
-    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' .  urlencode($targetEmail);
+    $curlUrl .= '/user?email=' .  $targetEmail;
 
-    $result = $this->curlGETauth($curlUrl);
-    if (isset($result[0]->uid)) {
-      $drupalUID = $result[0]->uid;
+    $result = $this->curlGET($curlUrl);
+    if (isset($result->drupal_uid)) {
+      $drupalUID = $result->drupal_uid;
 
       if (strlen($this->settings['subscriptions_url']) > 0) {
         $subscriptionsUrl = $this->settings['subscriptions_url'];
@@ -284,6 +284,9 @@ class MB_Toolbox
       if ($port > 0 && is_numeric($port)) {
         $subscriptionsUrl .= ':' . (int) $port;
       }
+
+      // Escape "+" character in email address
+      $targetEmail = str_replace('+', '\+', $targetEmail);
       $keyData = urlencode($targetEmail) . ', ' . $drupalUID . ', ' . date('Y-m-d');
       $subscriptionLink = $subscriptionsUrl  . '?targetEmail=' . urlencode($targetEmail) . '&key=' . md5($keyData);
 
