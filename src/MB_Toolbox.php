@@ -130,7 +130,9 @@ class MB_Toolbox
    */
   public function createDrupalUser($user) {
 
-    $password = isset($user->password) ? $user->password : "{$user->first_name}-Doer" . rand(1, 1000);
+    $tempPassword = str_replace(' ', '', $user->first_name) . '-Doer' . rand(1, 1000);
+    $password = isset($user->password) ? $user->password : $tempPassword ;
+
     // Required
     $post = array(
       'email' => $user->email,
@@ -263,16 +265,17 @@ class MB_Toolbox
 
     $this->statHat->clearAddedStatNames();
 
-    $curlUrl = $this->settings['ds_user_api_host'];
-    $port = $this->settings['ds_user_api_port'];
+    $curlUrl = $this->settings['ds_drupal_api_host'];
+    $port = $this->settings['ds_drupal_api_port'];
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
-    $curlUrl .= '/user?email=' .  $targetEmail;
+    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' .  urlencode($targetEmail);
 
-    $result = $this->curlGET($curlUrl);
-    if (isset($result->drupal_uid)) {
-      $drupalUID = $result->drupal_uid;
+    $result = $this->curlGETauth($curlUrl);
+
+    if (isset($result[0]->uid)) {
+      $drupalUID = $result[0]->uid;
 
       if (strlen($this->settings['subscriptions_url']) > 0) {
         $subscriptionsUrl = $this->settings['subscriptions_url'];
@@ -531,6 +534,13 @@ class MB_Toolbox
     // https://www.dosomething.org/api/v1/auth/login
     $curlUrl .= self::DRUPAL_API . '/auth/login';
     $auth = $this->curlPOST($curlUrl, $post);
+
+    if ($auth[1] == 200) {
+      $auth = $auth[0];
+    }
+    else {
+      $auth = FALSE;
+    }
 
     $this->auth = $auth;
   }
