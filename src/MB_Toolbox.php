@@ -205,8 +205,8 @@ class MB_Toolbox
      $post = array();
 
      $result = $this->curlPOSTauth($curlUrl, $post);
-     if (isset($result->readable)) {
-       $resetUrl = $result->readable;
+     if (isset($result[0])) {
+       $resetUrl = $result[0];
      }
      else {
        $resetUrl = NULL;
