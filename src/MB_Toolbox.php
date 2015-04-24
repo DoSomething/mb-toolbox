@@ -317,7 +317,9 @@ class MB_Toolbox
    *  Optional flag to denote if the method is being called from curlPOSTauth().
    *
    * @return object $result
-   *   The results returned from the cURL call.
+   *   The results returned from the cURL call as an array:
+   *   - [0]: Results in json format
+   *   - [1]: Status code
    */
   public function curlPOST($curlUrl, $post, $isAuth = FALSE) {
 
@@ -332,6 +334,7 @@ class MB_Toolbox
     // Only add token and cookie values to header when values are available and
     // the curlPOSTauth() method is making the POST request.
     if (isset($this->auth->token) && $isAuth) {
+      echo '- curlPOST auth ' . $curlUrl . ': ' . print_r($this-auth, TRUE), PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -342,6 +345,7 @@ class MB_Toolbox
       );
     }
     elseif (strpos($curlUrl, 'api.dosomething') !== FALSE && isset($this->settings['northstar_api_id']) && isset($this->settings['northstar_api_key'])) {
+      echo '- curlPOST: ' . $curlUrl, PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -364,6 +368,8 @@ class MB_Toolbox
     }
 
     $jsonResult = curl_exec($ch);
+    echo '- curlGET jsonResult: ' . $jsonResult, PHP_EOL;
+
     $results[0] = json_decode($jsonResult);
     $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
@@ -382,10 +388,11 @@ class MB_Toolbox
    * @return object $result
    *   The results returned from the cURL call.
    */
-  public function curlPOSTauth($curlUrl, $post) {
+   public function curlPOSTauth($curlUrl, $post) {
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
+      echo 'curlPOSTauth: this->auth not set, calling authenticate().', PHP_EOL;
       $this->authenticate();
     }
 
@@ -407,6 +414,8 @@ class MB_Toolbox
    *
    * @return object $result
    *   The results returned from the cURL call.
+   *   - [0]: Results in json format
+   *   - [1]: Status code
    */
   public function curlGET($curlUrl, $isAuth = FALSE) {
 
@@ -417,6 +426,7 @@ class MB_Toolbox
     // Only add token and cookie values to header when values are available and
     // the curlPOSTauth() method is making the POST request.
     if (isset($this->auth->token) && $isAuth) {
+      echo '- curlGET auth ' . $curlUrl . ': ' . print_r($this-auth, TRUE), PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -427,6 +437,7 @@ class MB_Toolbox
       );
     }
     else {
+      echo '- curlGET: ' . $curlUrl, PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -436,7 +447,8 @@ class MB_Toolbox
     }
 
     $jsonResult = curl_exec($ch);
-    $results = json_decode($jsonResult);
+    $results[0] = json_decode($jsonResult);
+    $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
     return $results;
@@ -455,6 +467,7 @@ class MB_Toolbox
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
+      echo 'curlGETauth: this->auth not set, calling authenticate().', PHP_EOL;
       $this->authenticate();
     }
 
@@ -473,6 +486,8 @@ class MB_Toolbox
    *
    * @return object $result
    *   The results returned from the cURL call.
+   *   - [0]: Results in json format
+   *   - [1]: Status code
    */
   public function curlDELETE($curlUrl, $isAuth = FALSE) {
 
@@ -484,6 +499,7 @@ class MB_Toolbox
     // Only add token and cookie values to header when values are available and
     // the curlDELETEauth() method is making the POST request.
     if (isset($this->auth->token) && $isAuth) {
+      echo '- curlDELETE auth ' . $curlUrl . ': ' . print_r($this-auth, TRUE), PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -494,6 +510,7 @@ class MB_Toolbox
       );
     }
     else {
+      echo '- curlDELETE: ' . $curlUrl, PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -503,9 +520,11 @@ class MB_Toolbox
     }
 
     $jsonResult = curl_exec($ch);
+    $results[0] = json_decode($jsonResult);
+    $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    return $jsonResult;
+    return $results;
   }
 
   /**
