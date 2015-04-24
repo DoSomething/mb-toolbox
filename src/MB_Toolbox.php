@@ -192,27 +192,28 @@ class MB_Toolbox
    * @return string $resetUrl
    *    The string supplied by the Drupal endpoint /password_reset_url or NULL on failure
    */
-   public function getPasswordResetURL($uid) {
-     $curlUrl = $this->settings['ds_drupal_api_host'];
-     $port = $this->settings['ds_drupal_api_port'];
-     if ($port > 0 && is_numeric($port)) {
-       $curlUrl .= ':' . (int) $port;
-     }
-     $curlUrl .= self::DRUPAL_API . '/users/' . $uid . '/password_reset_url';
+  public function getPasswordResetURL($uid) {
+    $curlUrl = $this->settings['ds_drupal_api_host'];
+    $port = $this->settings['ds_drupal_api_port'];
+    if ($port > 0 && is_numeric($port)) {
+      $curlUrl .= ':' . (int) $port;
+    }
+    $curlUrl .= self::DRUPAL_API . '/users/' . $uid . '/password_reset_url';
 
-     // $post value sent in cURL call intentionally empty due to the endpoint
-     // expecting POST rather than GET where there's no POST values expected.
-     $post = array();
+    // $post value sent in cURL call intentionally empty due to the endpoint
+    // expecting POST rather than GET where there's no POST values expected.
+    $post = array();
 
-     $result = $this->curlPOSTauth($curlUrl, $post);
-     if (isset($result[0])) {
-       $resetUrl = $result[0];
-     }
-     else {
-       $resetUrl = NULL;
-     }
-     return $resetUrl;
-   }
+    $result = $this->curlPOSTauth($curlUrl, $post);
+    if (isset($result[0])) {
+      $resetUrl = $result[0];
+    }
+    else {
+      echo 'MB_Toolbox->getPasswordResetURL - ERROR: ' . print_r($resulkt, TRUE), PHP_EOL;
+      $resetUrl = NULL;
+    }
+    return $resetUrl;
+  }
 
   /**
    * Gather current member count via Drupal end point.
@@ -294,7 +295,8 @@ class MB_Toolbox
       $this->statHat->addStatName('subscriptionsLinkGenerator Success');
     }
     else {
-      echo 'Error making GET request to ' . $curlUrl, PHP_EOL;
+      echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
+      echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
       $subscriptionLink = FALSE;
 
       $this->statHat->addStatName('subscriptionsLinkGenerator ERROR');
