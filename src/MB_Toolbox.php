@@ -239,8 +239,8 @@ class MB_Toolbox
     $post = array();
 
     $result = $this->curlPOST($curlUrl, $post);
-    if (isset($result->readable)) {
-      $memberCountFormatted = $result->readable;
+    if (isset($result[0]->readable)) {
+      $memberCountFormatted = $result[0]->readable;
     }
     else {
       $memberCountFormatted = 'millions of';
