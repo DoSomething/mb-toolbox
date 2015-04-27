@@ -297,7 +297,7 @@ class MB_Toolbox
     elseif ($result[1] == 200) {
       // @todo: Fix DELETE /user endpoint in mb-user-api
       // $result = $this->curlDELETE($curlUrl);
-      $subscriptionsUrl = 'ERROR - Drupal user not found by email: ' . $targetEmail;
+      $subscriptionLink = 'ERROR - Drupal user not found by email: ' . $targetEmail;
     }
     else {
       echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
