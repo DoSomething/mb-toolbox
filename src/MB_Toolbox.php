@@ -275,8 +275,8 @@ class MB_Toolbox
 
     $result = $this->curlGETauth($curlUrl);
 
-    if (isset($result[0]->uid)) {
-      $drupalUID = $result[0]->uid;
+    if (isset($result[0][0]->uid)) {
+      $drupalUID = $result[0][0]->uid;
 
       if (strlen($this->settings['subscriptions_url']) > 0) {
         $subscriptionsUrl = $this->settings['subscriptions_url'];
@@ -334,7 +334,6 @@ class MB_Toolbox
     // Only add token and cookie values to header when values are available and
     // the curlPOSTauth() method is making the POST request.
     if (isset($this->auth->token) && $isAuth) {
-      echo '- curlPOST auth ' . $curlUrl . ': ' . print_r($this-auth, TRUE), PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -345,7 +344,6 @@ class MB_Toolbox
       );
     }
     elseif (strpos($curlUrl, 'api.dosomething') !== FALSE && isset($this->settings['northstar_api_id']) && isset($this->settings['northstar_api_key'])) {
-      echo '- curlPOST: ' . $curlUrl, PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -426,7 +424,6 @@ class MB_Toolbox
     // Only add token and cookie values to header when values are available and
     // the curlPOSTauth() method is making the POST request.
     if (isset($this->auth->token) && $isAuth) {
-      echo '- curlGET auth ' . $curlUrl . ': ' . print_r($this-auth, TRUE), PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -437,7 +434,6 @@ class MB_Toolbox
       );
     }
     else {
-      echo '- curlGET: ' . $curlUrl, PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -499,7 +495,6 @@ class MB_Toolbox
     // Only add token and cookie values to header when values are available and
     // the curlDELETEauth() method is making the POST request.
     if (isset($this->auth->token) && $isAuth) {
-      echo '- curlDELETE auth ' . $curlUrl . ': ' . print_r($this-auth, TRUE), PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -510,7 +505,6 @@ class MB_Toolbox
       );
     }
     else {
-      echo '- curlDELETE: ' . $curlUrl, PHP_EOL;
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
