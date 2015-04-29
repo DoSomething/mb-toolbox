@@ -256,28 +256,59 @@ class MB_Toolbox
    *
    * @param string $targetEmail
    *   The email address to generate the subscription URL for.
+   * @param integer $drupalNID
+   *   Supplying the related Drupal NID incomplination with the $targetEmail will
+   *   result in an unsubscription link generation that will not require a call
+   *   to the Drupal app to lookup the NID by email. This is important because the
+   *   valume for this call that the Drupal app will process is very limited (maxes
+   *   at 200 calls per session key).
    *
    * @return string $subscription_link
    *   The URL to the user subscription settings web page. The link includes a
    *   key md5 hash value to limit page access to authorized users who have
    *   received an email from the lists the subscription page administers.
    */
-  public function subscriptionsLinkGenerator($targetEmail) {
+  public function subscriptionsLinkGenerator($targetEmail, $drupalUID = NULL) {
 
     $this->statHat->clearAddedStatNames();
+    $subscriptionLink = '';
 
-    $curlUrl = $this->settings['ds_drupal_api_host'];
-    $port = $this->settings['ds_drupal_api_port'];
-    if ($port > 0 && is_numeric($port)) {
-      $curlUrl .= ':' . (int) $port;
+    // Gather Drupal NID
+    if ($drupalUID == NULL) {
+
+      $curlUrl = $this->settings['ds_drupal_api_host'];
+      $port = $this->settings['ds_drupal_api_port'];
+      if ($port > 0 && is_numeric($port)) {
+        $curlUrl .= ':' . (int) $port;
+      }
+      $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' .  urlencode($targetEmail);
+
+      $result = $this->curlGETauth($curlUrl);
+
+      if (isset($result[0][0]->uid)) {
+        $drupalUID = (int) $result[0][0]->uid;
+      }
+      elseif ($result[1] == 200) {
+        // @todo: Fix DELETE /user endpoint in mb-user-api
+        // $result = $this->curlDELETE($curlUrl);
+        echo 'ERROR - Drupal user not found by email: ' . $targetEmail, PHP_EOL;
+        $subscriptionLink = 'ERROR - Drupal user not found by email';
+
+        $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - Drupal user not found by email');
+      }
+      else {
+        echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
+        echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
+        $subscriptionLink = FALSE;
+
+        $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - curlGETauth call failed');
+      }
     }
-    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' .  urlencode($targetEmail);
 
-    $result = $this->curlGETauth($curlUrl);
+    // Generate link
+    if ($drupalUID > 0) {
 
-    if (isset($result[0][0]->uid)) {
-      $drupalUID = $result[0][0]->uid;
-
+      // Build Subscription link path
       if (strlen($this->settings['subscriptions_url']) > 0) {
         $subscriptionsUrl = $this->settings['subscriptions_url'];
       }
@@ -286,7 +317,7 @@ class MB_Toolbox
       }
       $port = $this->settings['subscriptions_port'];
       if ($port > 0 && is_numeric($port)) {
-        $subscriptionsUrl .= ':' . (int) $port;
+         $subscriptionsUrl .= ':' . (int) $port;
       }
 
       $keyData = urlencode($targetEmail) . ', ' . $drupalUID . ', ' . date('Y-m-d');
@@ -294,20 +325,11 @@ class MB_Toolbox
 
       $this->statHat->addStatName('subscriptionsLinkGenerator Success');
     }
-    elseif ($result[1] == 200) {
-      // @todo: Fix DELETE /user endpoint in mb-user-api
-      // $result = $this->curlDELETE($curlUrl);
-      $subscriptionLink = 'ERROR - Drupal user not found by email: ' . $targetEmail;
-    }
     else {
-      echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
-      echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
       $subscriptionLink = FALSE;
-
-      $this->statHat->addStatName('subscriptionsLinkGenerator ERROR');
     }
-    $this->statHat->reportCount(1);
 
+    $this->statHat->reportCount(1);
     return $subscriptionLink;
   }
 
