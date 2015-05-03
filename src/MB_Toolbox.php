@@ -325,9 +325,6 @@ class MB_Toolbox
 
       $this->statHat->addStatName('subscriptionsLinkGenerator Success');
     }
-    else {
-      $subscriptionLink = FALSE;
-    }
 
     $this->statHat->reportCount(1);
     return $subscriptionLink;
