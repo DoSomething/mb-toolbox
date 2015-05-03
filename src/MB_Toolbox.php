@@ -289,12 +289,21 @@ class MB_Toolbox
         $drupalUID = (int) $result[0][0]->uid;
       }
       elseif ($result[1] == 200) {
-        // @todo: Fix DELETE /user endpoint in mb-user-api
-        // $result = $this->curlDELETE($curlUrl);
-        echo 'ERROR - Drupal user not found by email: ' . $targetEmail, PHP_EOL;
-        $subscriptionLink = 'ERROR - Drupal user not found by email';
 
-        $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - Drupal user not found by email');
+        // DELETE user in mb-user-api as invalid
+        $curlUrl = '';
+        $results = $this->curlDELETEauth($curlUrl);
+
+        if ($results[1] == 200) {
+          // $result = $this->curlDELETE($curlUrl);
+          echo 'ERROR - Drupal user not found by email: ' . $targetEmail, PHP_EOL;
+          $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - Drupal user not found by email');
+        }
+        else {
+          echo 'ERROR - Failed to delete user document in mb-user due to Drupal user not found by email: ' . $targetEmail, PHP_EOL;
+          $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - Failed to remove user document in mb-user.');
+        }
+        $subscriptionLink = 'ERROR - Drupal user not found by email';
       }
       else {
         echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
@@ -497,10 +506,10 @@ class MB_Toolbox
   }
 
   /**
-   * cURL DELETEs
+   * cURL DELETE
    *
    * @param string $curlUrl
-   *  The URL to GET from. Include domain and path.
+   *  The URL to DELETE from. Include domain and path.
    * @param boolean $isAuth
    *  A flag to keep track of the current authencation state.
    *
@@ -541,6 +550,28 @@ class MB_Toolbox
     $results[0] = json_decode($jsonResult);
     $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+
+    return $results;
+  }
+
+  /**
+   * cURL DELETE with authentication
+   *
+   * @param string $curlUrl
+   *  The URL to DELETE to. Include domain and path.
+   *
+   * @return object $result
+   *   The results returned from the cURL call.
+   */
+  public function curlDELETEauth($curlUrl) {
+
+    // Remove authentication until POST to /api/v1/auth/login is resolved
+    if (!isset($this->auth)) {
+      echo 'curlDELETEauth: this->auth not set, calling authenticate().', PHP_EOL;
+      $this->authenticate();
+    }
+
+    $results = $this->curlDELETE($curlUrl, TRUE);
 
     return $results;
   }
