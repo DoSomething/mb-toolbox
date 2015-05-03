@@ -291,7 +291,7 @@ class MB_Toolbox
       elseif ($result[1] == 200) {
 
         // DELETE user in mb-user-api as invalid
-        $curlUrl = '';
+        $curlUrl = 'email=' . urlencode($targetEmail) . '&exactCase=1';
         $results = $this->curlDELETEauth($curlUrl);
 
         if ($results[1] == 200) {
