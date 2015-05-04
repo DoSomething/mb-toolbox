@@ -215,8 +215,8 @@ class MB_Toolbox
     $post = array();
 
     $result = $this->curlPOSTauth($curlUrl, $post);
-    if (isset($result[0])) {
-      $resetUrl = $result[0];
+    if (isset($result[0][0])) {
+      $resetUrl = $result[0][0];
     }
     else {
       echo 'MB_Toolbox->getPasswordResetURL - ERROR: ' . print_r($result, TRUE), PHP_EOL;
