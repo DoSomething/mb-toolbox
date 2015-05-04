@@ -130,7 +130,8 @@ class MB_Toolbox
    */
   public function createDrupalUser($user) {
 
-    $tempPassword = str_replace(' ', '', $user->first_name) . '-Doer' . rand(1, 1000);
+    $firstName = isset($user->first_name) ? $user->first_name : 'DS';
+    $tempPassword = str_replace(' ', '', $firstName) . '-Doer' . rand(1, 1000);
     $password = isset($user->password) ? $user->password : $tempPassword ;
 
     // Required
@@ -171,7 +172,6 @@ class MB_Toolbox
     $this->statHat->reportCount(1);
 
     if (is_array($result)) {
-      echo $user->email . ' already a Drupal user.' . PHP_EOL;
       $this->statHat->clearAddedStatNames();
       $this->statHat->addStatName('Requested createDrupalUser - existing user');
       $this->statHat->reportCount(1);
@@ -301,8 +301,8 @@ class MB_Toolbox
         $results = $this->curlDELETE($curlUrl);
 
         if ($results[1] == 200) {
-          echo 'ERROR - Drupal user not found by email: ' . $targetEmail, PHP_EOL;
-          $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - Drupal user not found by email');
+          echo '- SUCCESS - User cleanup of ' . $targetEmail . ' deleted from mb-user as no match found in Drupal user table.', PHP_EOL;
+          $this->statHat->addStatName('subscriptionsLinkGenerator - User deleted from mb-user');
         }
         else {
           echo 'ERROR - Failed to delete user document in mb-user due to Drupal user not found by email: ' . $targetEmail, PHP_EOL;
@@ -404,7 +404,6 @@ class MB_Toolbox
     }
 
     $jsonResult = curl_exec($ch);
-    echo '- curlPOST jsonResult: ' . $jsonResult, PHP_EOL;
 
     $results[0] = json_decode($jsonResult);
     $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -428,7 +427,6 @@ class MB_Toolbox
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
-      echo 'curlPOSTauth: this->auth not set, calling authenticate().', PHP_EOL;
       $this->authenticate();
     }
 
@@ -501,7 +499,6 @@ class MB_Toolbox
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
-      echo 'curlGETauth: this->auth not set, calling authenticate().', PHP_EOL;
       $this->authenticate();
     }
 
@@ -554,7 +551,6 @@ class MB_Toolbox
 
     // Remove authentication until POST to /api/v1/auth/login is resolved
     if (!isset($this->auth)) {
-      echo 'curlDELETEauth: this->auth not set, calling authenticate().', PHP_EOL;
       $this->authenticate();
     }
 
