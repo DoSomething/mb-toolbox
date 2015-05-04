@@ -130,51 +130,61 @@ class MB_Toolbox
    */
   public function createDrupalUser($user) {
 
-    $firstName = isset($user->first_name) && $user->first_name != '' ? $user->first_name : 'DS';
-    $tempPassword = str_replace(' ', '', $firstName) . '-Doer' . rand(1, 1000);
-    $password = isset($user->password) ? $user->password : $tempPassword ;
+    // Ensure a valid email address
+    if (filter_var($user->email, FILTER_VALIDATE_EMAIL) && preg_match('/@.+\./', $user->email)) {
 
-    // Required
-    $post = array(
-      'email' => $user->email,
-      'password' => $password,
-      'user_registration_source' => isset($user->user_registration_source) ? $user->user_registration_source : '',
-    );
+      $firstName = isset($user->first_name) && $user->first_name != '' ? $user->first_name : 'DS';
+      $tempPassword = str_replace(' ', '', $firstName) . '-Doer' . rand(1, 1000);
+      $password = isset($user->password) ? $user->password : $tempPassword ;
 
-    // Optional
-    if (isset($user->first_name)) {
-      $post['first_name'] = $user->first_name;
-    }
-    if (isset($user->birthdate) && strpos($user->birthdate, '/') > 0) {
-      $post['birthdate'] = date('Y-m-d', strtotime($user->birthdate));
-    }
-    elseif (isset($user->birthdate) && is_int($user->birthdate)) {
-      $post['birthdate'] = date('Y-m-d', $user->birthdate);
-    }
-    elseif (isset($user->birthdate_timestamp) && is_int($user->birthdate_timestamp)) {
-      $post['birthdate'] = date('Y-m-d', $user->birthdate_timestamp);
-    }
-    if (isset($user->last_name)) {
-      $post['last_name'] = $user->last_name;
-    }
+      // Required
+      $post = array(
+        'email' => $user->email,
+        'password' => $password,
+        'user_registration_source' => isset($user->user_registration_source) ? $user->user_registration_source : '',
+      );
 
-    $ch = curl_init();
-    $drupalAPIUrl = $this->settings['ds_drupal_api_host'];
-    $port = $this->settings['ds_drupal_api_port'];
-    if ($port > 0 && is_numeric($port)) {
-      $drupalAPIUrl .= ":{$port}";
-    }
-    $drupalAPIUrl .= self::DRUPAL_API . '/users';
-    $result = $this->curlPOST($drupalAPIUrl, $post);
+      // Optional
+      if (isset($user->first_name) && $user->first_name != '') {
+        $post['first_name'] = $user->first_name;
+      }
+      if (isset($user->birthdate) && strpos($user->birthdate, '/') > 0 && strtotime($user->birthdate) != FALSE) {
+        $post['birthdate'] = date('Y-m-d', strtotime($user->birthdate));
+      }
+      elseif (isset($user->birthdate) && is_int($user->birthdate)) {
+        $post['birthdate'] = date('Y-m-d', $user->birthdate);
+      }
+      elseif (isset($user->birthdate_timestamp) && is_int($user->birthdate_timestamp)) {
+        $post['birthdate'] = date('Y-m-d', $user->birthdate_timestamp);
+      }
+      if (isset($user->last_name) && $user->last_name != '') {
+        $post['last_name'] = $user->last_name;
+      }
 
-    $this->statHat->clearAddedStatNames();
-    $this->statHat->addStatName('Requested createDrupalUser');
-    $this->statHat->reportCount(1);
+      $ch = curl_init();
+      $drupalAPIUrl = $this->settings['ds_drupal_api_host'];
+      $port = $this->settings['ds_drupal_api_port'];
+      if ($port > 0 && is_numeric($port)) {
+        $drupalAPIUrl .= ":{$port}";
+      }
+      $drupalAPIUrl .= self::DRUPAL_API . '/users';
+      $result = $this->curlPOST($drupalAPIUrl, $post);
 
-    if (is_array($result)) {
       $this->statHat->clearAddedStatNames();
-      $this->statHat->addStatName('Requested createDrupalUser - existing user');
+      $this->statHat->addStatName('Requested createDrupalUser');
       $this->statHat->reportCount(1);
+
+      if (is_array($result)) {
+        $this->statHat->clearAddedStatNames();
+        $this->statHat->addStatName('Requested createDrupalUser - existing user');
+        $this->statHat->reportCount(1);
+      }
+
+    }
+    else {
+      echo 'ERROR - Invalid email address: ' . $user->email, PHP_EOL;
+      $result = FALSE;
+      $password = '';
     }
 
     return array($result, $password);
