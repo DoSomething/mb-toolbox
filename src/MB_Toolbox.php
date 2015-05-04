@@ -209,7 +209,7 @@ class MB_Toolbox
       $resetUrl = $result[0];
     }
     else {
-      echo 'MB_Toolbox->getPasswordResetURL - ERROR: ' . print_r($resulkt, TRUE), PHP_EOL;
+      echo 'MB_Toolbox->getPasswordResetURL - ERROR: ' . print_r($result, TRUE), PHP_EOL;
       $resetUrl = NULL;
     }
     return $resetUrl;
