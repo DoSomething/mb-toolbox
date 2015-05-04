@@ -290,12 +290,17 @@ class MB_Toolbox
       }
       elseif ($result[1] == 200) {
 
+        $curlUrl = $this->settings['ds_user_api_host'];
+        $port = $this->settings['ds_user_api_port'];
+        if ($port != 0 && is_numeric($port)) {
+          $curlUrl .= ':' . (int) $port;
+        }
+
         // DELETE user in mb-user-api as invalid
-        $curlUrl = 'email=' . urlencode($targetEmail) . '&exactCase=1';
-        $results = $this->curlDELETEauth($curlUrl);
+        $curlUrl .= '/user?email=' . urlencode($targetEmail) . '&exactCase=1';
+        $results = $this->curlDELETE($curlUrl);
 
         if ($results[1] == 200) {
-          // $result = $this->curlDELETE($curlUrl);
           echo 'ERROR - Drupal user not found by email: ' . $targetEmail, PHP_EOL;
           $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - Drupal user not found by email');
         }
@@ -399,7 +404,7 @@ class MB_Toolbox
     }
 
     $jsonResult = curl_exec($ch);
-    echo '- curlGET jsonResult: ' . $jsonResult, PHP_EOL;
+    echo '- curlPOST jsonResult: ' . $jsonResult, PHP_EOL;
 
     $results[0] = json_decode($jsonResult);
     $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -510,41 +515,23 @@ class MB_Toolbox
    *
    * @param string $curlUrl
    *  The URL to DELETE from. Include domain and path.
-   * @param boolean $isAuth
-   *  A flag to keep track of the current authencation state.
    *
    * @return object $result
    *   The results returned from the cURL call.
    *   - [0]: Results in json format
    *   - [1]: Status code
    */
-  public function curlDELETE($curlUrl, $isAuth = FALSE) {
+  public function curlDELETE($curlUrl) {
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $curlUrl);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+    curl_setopt($ch, CURLOPT_HEADER, TRUE);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+      'Accept: application/json',
+      'Content-Type: application/json',
+    ));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-    // Only add token and cookie values to header when values are available and
-    // the curlDELETEauth() method is making the POST request.
-    if (isset($this->auth->token) && $isAuth) {
-      curl_setopt($ch, CURLOPT_HTTPHEADER,
-        array(
-          'Content-type: application/json',
-          'Accept: application/json',
-          'X-CSRF-Token: ' . $this->auth->token,
-          'Cookie: ' . $this->auth->session_name . '=' . $this->auth->sessid
-        )
-      );
-    }
-    else {
-      curl_setopt($ch, CURLOPT_HTTPHEADER,
-        array(
-          'Content-type: application/json',
-          'Accept: application/json'
-        )
-      );
-    }
 
     $jsonResult = curl_exec($ch);
     $results[0] = json_decode($jsonResult);
