@@ -130,7 +130,7 @@ class MB_Toolbox
    */
   public function createDrupalUser($user) {
 
-    $firstName = isset($user->first_name) ? $user->first_name : 'DS';
+    $firstName = isset($user->first_name) && $user->first_name != '' ? $user->first_name : 'DS';
     $tempPassword = str_replace(' ', '', $firstName) . '-Doer' . rand(1, 1000);
     $password = isset($user->password) ? $user->password : $tempPassword ;
 
