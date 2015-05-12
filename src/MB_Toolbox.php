@@ -131,7 +131,7 @@ class MB_Toolbox
   public function createDrupalUser($user) {
 
     // Ensure a valid email address
-    if (filter_var($user->email, FILTER_VALIDATE_EMAIL) && preg_match('/@.+\./', $user->email)) {
+    if (filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
 
       $firstName = isset($user->first_name) && $user->first_name != '' ? $user->first_name : 'DS';
       $tempPassword = str_replace(' ', '', $firstName) . '-Doer' . rand(1, 1000);
