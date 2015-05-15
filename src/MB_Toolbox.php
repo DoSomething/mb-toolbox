@@ -318,7 +318,8 @@ class MB_Toolbox
           echo 'ERROR - Failed to delete user document in mb-user due to Drupal user not found by email: ' . $targetEmail, PHP_EOL;
           $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - Failed to remove user document in mb-user.');
         }
-        $subscriptionLink = 'ERROR - Drupal user not found by email';
+        echo '- ERROR - Drupal user not found by email: ' .  $targetEmail, PHP_EOL;
+        $subscriptionLink = 'ERROR - Drupal user not found by email.';
       }
       else {
         echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
