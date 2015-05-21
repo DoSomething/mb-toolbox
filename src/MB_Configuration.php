@@ -38,8 +38,8 @@ class MB_Configuration
    */
   public function __construct($source, $applicationSettings) {
 
-    $this->statHat = new StatHat($applicationSettings['stathat_ez_key'], 'MC_Configuration:');
-    $this->statHat->setIsProduction(TRUE);
+    $this->statHat = new StatHat($applicationSettings['stathat_ez_key'], 'MB_Configuration:');
+    $this->statHat->setIsProduction(isset($applicationSettings['use_stathat_tracking']) ? $applicationSettings['use_stathat_tracking'] : FALSE);
 
     $this->configSettings = $this->_gatherSettings($source);
   }

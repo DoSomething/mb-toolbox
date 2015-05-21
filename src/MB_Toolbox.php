@@ -418,6 +418,7 @@ class MB_Toolbox
 
     $results[0] = json_decode($jsonResult);
     $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    echo 'curlPOST results: ' . print_r($results, TRUE), PHP_EOL;
     curl_close($ch);
 
     return $results;
@@ -601,6 +602,7 @@ class MB_Toolbox
       $auth = $auth[0];
     }
     else {
+      ECHO 'ERROR - Failed to get auth creds: ' . $curlUrl . ' with POST: ' . print_r($post, TRUE), PHP_EOL;
       $auth = FALSE;
     }
 
