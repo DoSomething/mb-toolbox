@@ -46,6 +46,14 @@ class MB_Configuration
 
   /**
    * Construct config for connection to Rabbit exchange and queue
+   *
+   * @param string $targetExchange
+   *   The name of the exchange to include in the construction of $config
+   * @param string $targetQueues
+   *   The name of the queue(s) to include in the construction of $config
+   *
+   * @return array $config
+   *   All of the Message Broker configuration settings to make a connection to RabbitMQ.
    */
   public function constructConfig($targetExchange, $targetQueues = NULL) {
 
@@ -93,6 +101,12 @@ class MB_Configuration
   
   /**
    * Gather all setting for a specific exchange
+   *
+   * @param string $targetExchange
+   *   The name of the exchange to gather setting for.
+   *
+   * @return array $settings
+   *   The exchange settings in the format needed for a RabbitMQ conneciton.
    */
   public function exchangeSettings($targetExchange) {
     
