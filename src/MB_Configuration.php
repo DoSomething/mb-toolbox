@@ -36,16 +36,77 @@ class MB_Configuration
    * @param array $applicationSettings
    *   General application settings for use by all classes in application.
    */
-  public function __construct($source, $applicationSettings) {
+  public function __construct($settings, $configSettingPath) {
 
-    $this->statHat = new StatHat($applicationSettings['stathat_ez_key'], 'MB_Configuration:');
-    $this->statHat->setIsProduction(isset($applicationSettings['use_stathat_tracking']) ? $applicationSettings['use_stathat_tracking'] : FALSE);
+    $this->statHat = new StatHat($settings['stathat_ez_key'], 'MC_Configuration:');
+    $this->statHat->setIsProduction(TRUE);
 
-    $this->configSettings = $this->_gatherSettings($source);
+    $this->configSettings = $this->_gatherSettings($configSettingPath);
+  }
+
+  /**
+   * Construct config for connection to Rabbit exchange and queue
+   *
+   * @param string $targetExchange
+   *   The name of the exchange to include in the construction of $config
+   * @param string $targetQueues
+   *   The name of the queue(s) to include in the construction of $config
+   *
+   * @return array $config
+   *   All of the Message Broker configuration settings to make a connection to RabbitMQ.
+   */
+  public function constructConfig($targetExchange, $targetQueues = NULL) {
+
+    $exchangeSettings = $this->exchangeSettings($targetExchange);
+
+    $config['exchange'] = array(
+      'name' => $exchangeSettings->name,
+      'type' => $exchangeSettings->type,
+      'passive' => $exchangeSettings->passive,
+      'durable' => $exchangeSettings->durable,
+      'auto_delete' => $exchangeSettings->auto_delete,
+    );
+
+    if ($config['exchange']['type'] == "topic") {
+      foreach ($exchangeSettings->queues as $queueSetting) {
+        if (in_array($queueSetting->name, $targetQueues) || $targetQueues == NULL) {
+          foreach ($queueSetting->binding_patterns as $bindingKey) {
+            $config['queue'][] = array(
+              'name' => $queueSetting->name,
+              'passive' => $queueSetting->passive,
+              'durable' =>  $queueSetting->durable,
+              'exclusive' =>  $queueSetting->exclusive,
+              'auto_delete' =>  $queueSetting->auto_delete,
+              'bindingKey' => $bindingKey,
+            );
+          }
+        }
+      }
+    }
+    else {
+      foreach ($targetQueues as $queue) {
+        $config['queue'][] = array(
+          'name' => $exchangeSettings->queues->$queue->name,
+          'passive' => $exchangeSettings->queues->$queue->passive,
+          'durable' =>  $exchangeSettings->queues->$queue->durable,
+          'exclusive' =>  $exchangeSettings->queues->$queue->exclusive,
+          'auto_delete' =>  $exchangeSettings->queues->$queue->auto_delete,
+          'bindingKey' => $exchangeSettings->queues->$queue->binding_key,
+        );
+      }
+    }
+
+    return $config;
   }
   
   /**
    * Gather all setting for a specific exchange
+   *
+   * @param string $targetExchange
+   *   The name of the exchange to gather setting for.
+   *
+   * @return array $settings
+   *   The exchange settings in the format needed for a RabbitMQ conneciton.
    */
   public function exchangeSettings($targetExchange) {
     
