@@ -93,6 +93,12 @@ class MB_Configuration
           'auto_delete' =>  $exchangeSettings->queues->$queue->auto_delete,
           'bindingKey' => $exchangeSettings->queues->$queue->binding_key,
         );
+        $config['consume'] = array(
+          'no_local' => $exchangeSettings->queues->$queue->consume->no_local,
+          'no_ack' => $exchangeSettings->queues->$queue->consume->no_ack,
+          'nowait' => $exchangeSettings->queues->$queue->consume->nowait,
+          'exclusive' => $exchangeSettings->queues->$queue->consume->exclusive,
+        );
       }
     }
 
