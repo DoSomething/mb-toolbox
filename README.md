@@ -40,7 +40,10 @@ Settings from external services - Mailchimp
 **Methods**
 - exchangeSettings($targetExchange)
 
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/DoSomething/mb-toolbox/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
+####class MB_Toolbox_cURL
+```
+@param array $settings
+  Configuration settings defined by the application script accessing the library.
+```
+**Methods**
+- curlGETImage($imageUrl): static public
