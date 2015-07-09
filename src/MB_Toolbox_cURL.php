@@ -6,7 +6,7 @@
 namespace DoSomething\MB_Toolbox;
 use DoSomething\MBStatTracker\StatHat;
 
-class MB_cURL
+class MB_Toolbox_cURL
 {
 
   const DRUPAL_API = '/api/v1';
@@ -57,8 +57,8 @@ class MB_cURL
   /**
    * cURL GET Image (curlGETImage).
    *
-   * @param string $curlUrl
-   *  The URL to GET from. Include domain and path.
+   * @param string $imageUrl
+   *  The URL to GET image from. Include domain and path.
    *
    * @return boolean $results
    *  Response from cURL GET request.
@@ -68,10 +68,10 @@ class MB_cURL
    *   - [0]: Results in json format
    *   - [1]: Status code
    */
-  public function curlGETImage($curlUrl) {
+  static public function curlGETImage($imageUrl) {
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $curlUrl);
+    curl_setopt($ch, CURLOPT_URL, $imageUrl);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::TIMEOUT);
     
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
