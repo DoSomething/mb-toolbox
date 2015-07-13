@@ -9,7 +9,7 @@ use DoSomething\MB_Toolbox\MB_Toolbox;
  * MBC_UserAPICampaignActivity.class.in: Used to process the transactionalQueue
  * entries that match the campaign.*.* binding.
  */
-abstract class MBC_Toolbox_BaseConsumer
+abstract class MB_Toolbox_BaseConsumer
 {
 
    // The number of seconds to pause when throttling is triggered
