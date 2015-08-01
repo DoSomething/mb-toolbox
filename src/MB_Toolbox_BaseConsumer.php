@@ -1,4 +1,7 @@
 <?php
+/**
+ * A template for all producer classes within the Message Broker system.
+ */
 
 namespace DoSomething\MB_Toolbox;
 
