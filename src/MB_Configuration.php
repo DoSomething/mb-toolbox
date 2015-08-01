@@ -8,44 +8,62 @@ namespace DoSomething\MB_Toolbox;
 use DoSomething\MBStatTracker\StatHat;
 
 /**
- * MB_Configuration class - functionality related to the Message Broker
- * configuration.
+ * MB_Configuration class - application-level configuration the Message Broker
+ * system uses. Settings contained by the single instance is specific to the application and accessible
+ * to all application classes.
+ *
+ * The class uses the Singleton pattern. This ensures there is only one instance of the application
+ * settings.
  */
 class MB_Configuration
 {
-  /**
-   * Report consumer activity to StatHat service.
-   *
-   * @var object
-   */
-  private $statHat;
-  
+
   /**
    * All Message Broker configuration settings - the source of truth.
    *
-   * @var object
+   * @var array
    */
-  private $configSettings;
+  private $configSettings = [];
+  
+  /**
+   * Instance of MB_Configuration class. Private and static to ensure access is only internal.
+   */
+  private static $instance;
 
   /**
-   * Constructor for MessageBroker-Config
-   *
-   * @param array $source
-   *   The source of configuration settings. This can be from a file or an
-   *   endpoint.
-   * @param array $applicationSettings
-   *   General application settings for use by all classes in application.
+   * Constructor - private to enforce singleton pattern. Only once instance of class allowed.
    */
-  public function __construct($settings, $configSettingPath) {
+  private function __construct() {}
 
-    $this->statHat = new StatHat($settings['stathat_ez_key'], 'MC_Configuration:');
-    $this->statHat->setIsProduction(TRUE);
-
-    $this->configSettings = $this->_gatherSettings($configSettingPath);
+  /**
+   * Static method to limit instantiation of class to only one object.
+   */
+  public static function getInstance() {
+    if (empty(self::$instance)) {
+      self::$instance = new MB_Configuration();
+    }
+    return self::$instance;
   }
 
   /**
-   * Construct config for connection to Rabbit exchange and queue
+   * Set property in MB_Configuration instance.
+   *
+   * @todo: Add locking to prevent adding / editing of settings after addition of configuration
+   * settings is complete.
+   */
+  public function setProperty($key, $value) {
+    $this->configSettings[$key] = $value;
+  }
+
+  /**
+   * Get property in MB_Configuration instance.
+   */
+  public function getProperty($key, $value) {
+    return $this->configSettings[$key];
+  }
+
+  /**
+   * Construct RabbitMQ config for connection to exchange and queue.
    *
    * @param string $targetExchange
    *   The name of the exchange to include in the construction of $config
@@ -55,8 +73,9 @@ class MB_Configuration
    * @return array $config
    *   All of the Message Broker configuration settings to make a connection to RabbitMQ.
    */
-  public function constructConfig($targetExchange, $targetQueues = NULL) {
+  public function constructRabbitConfig($targetExchange, $targetQueues = NULL) {
 
+    self::setProperty('configFile', self::_gatherSettings(CONFIG_PATH . '/mb_config.json'));
     $exchangeSettings = $this->exchangeSettings($targetExchange);
 
     $config['exchange'] = array(
@@ -106,7 +125,7 @@ class MB_Configuration
 
     return $config;
   }
-  
+
   /**
    * Gather all setting for a specific exchange
    *
@@ -114,12 +133,12 @@ class MB_Configuration
    *   The name of the exchange to gather setting for.
    *
    * @return array $settings
-   *   The exchange settings in the format needed for a RabbitMQ conneciton.
+   *   The exchange settings in the format needed for a RabbitMQ connection.
    */
   public function exchangeSettings($targetExchange) {
-    
-    if (isset($this->configSettings->rabbit->exchanges)) {
-      foreach($this->configSettings->rabbit->exchanges as $exchange => $exchangeSettings) {
+
+    if (isset($this->configSettings['configFile']->rabbit->exchanges)) {
+      foreach($this->configSettings['configFile']->rabbit->exchanges as $exchange => $exchangeSettings) {
         if ($exchange == $targetExchange) {
           $settings = $exchangeSettings;
         }
@@ -129,30 +148,19 @@ class MB_Configuration
       echo 'Error - No exchange settings found.', PHP_EOL;
     }
 
-    $this->statHat->clearAddedStatNames();
-    $this->statHat->addStatName('exchangeSettings');
-    $this->statHat->reportCount(1);
-
     return $settings;
   }
-  
+
   /**
    * Gather all Message Broker configuration settings from the defined source.
    *
    * @param string $source
    *   Source can be the path to a file or a URL to an endpoint.
    */
-  private function _gatherSettings($source) {
-
-    $this->statHat->clearAddedStatNames();
-    $this->statHat->addStatName('_gatherSettings');
-    $this->statHat->reportCount(1);
+  private static function _gatherSettings($source) {
 
     if (strpos('http://', $source) !== FALSE) {
       echo 'cURL sources are not currently supported.', PHP_EOL;
-      $this->statHat->clearAddedStatNames();
-      $this->statHat->addStatName('_gatherSettings - cURL sources not supported');
-      $this->statHat->reportCount(1);
     }
     elseif (file_exists($source)) {
         $settings = json_decode(implode(file($source)));
@@ -160,9 +168,6 @@ class MB_Configuration
     }
     else {
       echo 'Source: ' . $source . ' not found.', PHP_EOL;
-      $this->statHat->clearAddedStatNames();
-      $this->statHat->addStatName('_gatherSettings - source not found');
-      $this->statHat->reportCount(1);
     }
 
   }
