@@ -84,12 +84,12 @@ abstract class MB_Toolbox_BaseConsumer
    * @param array $settings
    *   Settings from internal and external services used by the application.
    */
-  public function __construct($messageBroker, StatHat $statHat, MB_Toolbox $toolbox, $settings) {
+  public function __construct() {
 
-    $this->messageBroker = $messageBroker;
-    $this->statHat = $statHat;
-    $this->toolbox = $toolbox;
-    $this->settings = $settings;
+    $this->mbConfig = MB_Configuration::getInstance();
+    $this->messageBroker = $this->mbConfig->getProperty('messageBroker');
+    $this->statHat = $this->mbConfig->getProperty('statHat');
+    $this->toolbox = $this->mbConfig->getProperty('mbToolbox');
   }
 
   /**
