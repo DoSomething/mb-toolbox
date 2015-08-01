@@ -32,8 +32,22 @@ class MB_Configuration
 
   /**
    * Constructor - private to enforce singleton pattern. Only once instance of class allowed.
+   *
+   * Protected constructor to prevent creating a new instance of the *Singleton* via the
+   * `new` operator from outside of the class.
+   *
+   * See: http://www.phptherightway.com/pages/Design-Patterns.html
    */
   private function __construct() {}
+
+  /**
+   * Private clone method to prevent cloning of the instance of the
+   * *Singleton* instance.
+   *
+   * The magic method __clone() is declared as private to prevent cloning of an instance
+   * of the class via the clone operator.
+   */
+  private function __clone() {}
 
   /**
    * Static method to limit instantiation of class to only one object.
