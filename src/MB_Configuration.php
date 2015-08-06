@@ -72,7 +72,7 @@ class MB_Configuration
   /**
    * Get property in MB_Configuration instance.
    */
-  public function getProperty($key, $value) {
+  public function getProperty($key) {
     return $this->configSettings[$key];
   }
 

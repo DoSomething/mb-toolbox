@@ -99,6 +99,8 @@ abstract class MB_Toolbox_BaseConsumer
   public function consumeQueue($payload) {
 
     $this->message = unserialize($payload->body);
+    $this->message['original'] = $this->message;
+    $this->message['payload'] = $payload;
   }
 
    /**
