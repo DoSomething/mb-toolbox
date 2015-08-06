@@ -1,7 +1,4 @@
 <?php
-/**
- * A template for all producer classes within the Message Broker system.
- */
 
 namespace DoSomething\MB_Toolbox;
 
@@ -19,19 +16,26 @@ abstract class MB_Toolbox_BaseConsumer
    const THROTTLE_TIMEOUT = 5;
 
   /**
+   * Singleton instance of MB_Configuration application settings and service objects
+   *
+   * @var object
+   */
+  protected $mbConfig;
+
+  /**
    * Message Broker connection to RabbitMQ
    *
    * @var object
    */
   protected $messageBroker;
-  
+
   /**
    * StatHat object for logging of activity
    *
    * @var object
    */
   protected $statHat;
-  
+
   /**
    * Message Broker Toolbox - collection of utility methods used by many of the
    * Message Broker producer and consumer applications.
@@ -40,13 +44,6 @@ abstract class MB_Toolbox_BaseConsumer
    */
   protected $toolbox;
 
-  /**
-   * Setting from external services - Mail chimp.
-   *
-   * @var array
-   */
-  protected $settings;
-  
   /**
    * Value of message from queue to be consumed / processed.
    *
@@ -137,6 +134,11 @@ abstract class MB_Toolbox_BaseConsumer
    *  The payload of the unseralized message being processed.
    */
   abstract protected function setter($message);
+
+  /**
+   * Evalue message settings to determine if the message can be processed.
+   */
+  abstract protected function canProcess();
 
   /**
    * Process message from consumed queue.
