@@ -33,15 +33,13 @@ class MB_Toolbox
   private $auth;
 
   /**
-   * Constructor
-   *
-   * @param array $settings
-   *   Connection and configuration settings common to the application
+   * Constructor for MB_Toolbox class. Test for curl_init library and gather
+   * settings from mb_Comfiguration class.
    *
    * @return object
    */
-  public function __construct($settings) {
-    $this->settings = $settings;
+  public function __construct() {
+
     $this->auth = NULL;
 
     // Check for cURL on server
@@ -49,8 +47,8 @@ class MB_Toolbox
       throw new Exception("Error - PHP cURL extension is not enabled on the server. cURL is required by many of the methods in the mb-toolbox library.");
     }
 
-    $this->statHat = new StatHat($settings['stathat_ez_key'], 'MB_Toolbox:');
-    $this->statHat->setIsProduction(TRUE);
+    $this->mbConfig = MB_Configuration::getInstance();
+    $this->statHat = $this->mbConfig->getProperty('statHat');
   }
 
   /**
@@ -96,14 +94,10 @@ class MB_Toolbox
         'CD' => 'https://congo.dosomething.org',     // Congo, The Democratic Republic of the"
       );
       $foundAffiliate['url'] = $affiliateURL[$targetCountyCode];
-      $this->statHat->clearAddedStatNames();
-      $this->statHat->addStatName('isDSAffiliate Found');
-      $this->statHat->reportCount(1);
+      $this->statHat->ezCount('MB_Toolbox: isDSAffiliate Found');
     }
     else {
-      $this->statHat->clearAddedStatNames();
-      $this->statHat->addStatName('isDSAffiliate Not Found');
-      $this->statHat->reportCount(1);
+      $this->statHat->ezCount('MB_Toolbox: isDSAffiliate Not Found');
     }
 
     return $foundAffiliate;
@@ -162,27 +156,23 @@ class MB_Toolbox
       }
 
       $ch = curl_init();
-      $drupalAPIUrl = $this->settings['ds_drupal_api_host'];
-      $port = $this->settings['ds_drupal_api_port'];
+      $drupalAPIUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
+      $port = $this->mbConfig->getProperty('ds_drupal_api_port');
       if ($port > 0 && is_numeric($port)) {
         $drupalAPIUrl .= ":{$port}";
       }
       $drupalAPIUrl .= self::DRUPAL_API . '/users';
       $result = $this->curlPOST($drupalAPIUrl, $post);
-
-      $this->statHat->clearAddedStatNames();
-      $this->statHat->addStatName('Requested createDrupalUser');
-      $this->statHat->reportCount(1);
+      $this->statHat->ezCount('MB_Toolbox: Requested createDrupalUser');
 
       if (is_array($result)) {
-        $this->statHat->clearAddedStatNames();
-        $this->statHat->addStatName('Requested createDrupalUser - existing user');
-        $this->statHat->reportCount(1);
+        $this->statHat->ezCount('MB_Toolbox: Requested createDrupalUser - existing user');
       }
 
     }
     else {
       echo 'ERROR - Invalid email address: ' . $user->email, PHP_EOL;
+      $this->statHat->ezCount('MB_Toolbox: createDrupalUser - ERROR - Invalid email address');
       $result = FALSE;
       $password = '';
     }
@@ -203,8 +193,9 @@ class MB_Toolbox
    *    The string supplied by the Drupal endpoint /password_reset_url or NULL on failure
    */
   public function getPasswordResetURL($uid) {
-    $curlUrl = $this->settings['ds_drupal_api_host'];
-    $port = $this->settings['ds_drupal_api_port'];
+
+    $curlUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
+    $port = $this->mbConfig->getProperty('ds_drupal_api_port');
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
@@ -217,9 +208,11 @@ class MB_Toolbox
     $result = $this->curlPOSTauth($curlUrl, $post);
     if (isset($result[0][0])) {
       $resetUrl = $result[0][0];
+      $this->statHat->ezCount('MB_Toolbox: getPasswordResetURL');
     }
     else {
       echo 'MB_Toolbox->getPasswordResetURL - ERROR: ' . print_r($result, TRUE), PHP_EOL;
+      $this->statHat->ezCount('MB_Toolbox: getPasswordResetURL ERROR');
       $resetUrl = NULL;
     }
     return $resetUrl;
@@ -237,8 +230,8 @@ class MB_Toolbox
    */
   public function getDSMemberCount() {
 
-    $curlUrl = $this->settings['ds_drupal_api_host'];
-    $port = $this->settings['ds_drupal_api_port'];
+    $curlUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
+    $port = $this->mbConfig->getProperty('ds_drupal_api_port');
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
@@ -251,9 +244,11 @@ class MB_Toolbox
     $result = $this->curlPOST($curlUrl, $post);
     if (isset($result[0]->readable)) {
       $memberCountFormatted = $result[0]->readable;
+      $this->statHat->ezCount('MB_Toolbox: getDSMemberCount');
     }
     else {
       $memberCountFormatted = 'millions of';
+      $this->statHat->ezCount('MB_Toolbox: getDSMemberCount ERROR');
     }
     return $memberCountFormatted;
   }
@@ -280,14 +275,12 @@ class MB_Toolbox
    */
   public function subscriptionsLinkGenerator($targetEmail, $drupalUID = NULL) {
 
-    $this->statHat->clearAddedStatNames();
     $subscriptionLink = '';
 
     // Gather Drupal NID
     if ($drupalUID == NULL) {
-
-      $curlUrl = $this->settings['ds_drupal_api_host'];
-      $port = $this->settings['ds_drupal_api_port'];
+      $curlUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
+      $port = $this->mbConfig->getProperty('ds_drupal_api_port');
       if ($port > 0 && is_numeric($port)) {
         $curlUrl .= ':' . (int) $port;
       }
@@ -299,9 +292,8 @@ class MB_Toolbox
         $drupalUID = (int) $result[0][0]->uid;
       }
       elseif ($result[1] == 200) {
-
-        $curlUrl = $this->settings['ds_user_api_host'];
-        $port = $this->settings['ds_user_api_port'];
+        $curlUrl = $this->mbConfig->getProperty('ds_user_api_host');
+        $port = $this->mbConfig->getProperty('ds_user_api_port');
         if ($port != 0 && is_numeric($port)) {
           $curlUrl .= ':' . (int) $port;
         }
@@ -312,21 +304,22 @@ class MB_Toolbox
 
         if ($results[1] == 200) {
           echo '- SUCCESS - User cleanup of ' . $targetEmail . ' deleted from mb-user as no match found in Drupal user table.', PHP_EOL;
-          $this->statHat->addStatName('subscriptionsLinkGenerator - User deleted from mb-user');
+          $this->statHat->ezCount('MB_Toolbox: subscriptionsLinkGenerator - User deleted');
         }
         else {
           echo 'ERROR - Failed to delete user document in mb-user due to Drupal user not found by email: ' . $targetEmail, PHP_EOL;
-          $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - Failed to remove user document in mb-user.');
+          $this->statHat->ezCount('MB_Toolbox: subscriptionsLinkGenerator - failed to delete User document');
         }
         echo '- ERROR - Drupal user not found by email: ' .  $targetEmail, PHP_EOL;
         $subscriptionLink = 'ERROR - Drupal user not found by email.';
+        $this->statHat->ezCount('MB_Toolbox: subscriptionsLinkGenerator - ERROR - Drupal user not found by email');
       }
       else {
         echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
         echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
         $subscriptionLink = FALSE;
 
-        $this->statHat->addStatName('subscriptionsLinkGenerator ERROR - curlGETauth call failed');
+        $this->statHat->ezCount('MB_Toolbox: subscriptionsLinkGenerator - ERROR - curlGETauth call failed');
       }
     }
 
@@ -334,13 +327,13 @@ class MB_Toolbox
     if ($drupalUID > 0) {
 
       // Build Subscription link path
-      if (strlen($this->settings['subscriptions_url']) > 0) {
-        $subscriptionsUrl = $this->settings['subscriptions_url'];
+      if (strlen($this->mbConfig->getProperty('subscriptions_url')) > 0) {
+        $subscriptionsUrl = $this->mbConfig->getProperty('subscriptions_url');
       }
       else {
-        $subscriptionsUrl = $this->settings['subscriptions_ip'];
+        $subscriptionsUrl = $this->mbConfig->getProperty('subscriptions_ip');
       }
-      $port = $this->settings['subscriptions_port'];
+      $port = $this->mbConfig->getProperty('subscriptions_port');
       if ($port > 0 && is_numeric($port)) {
          $subscriptionsUrl .= ':' . (int) $port;
       }
@@ -348,10 +341,9 @@ class MB_Toolbox
       $keyData = urlencode($targetEmail) . ', ' . $drupalUID . ', ' . date('Y-m-d');
       $subscriptionLink = $subscriptionsUrl  . '?targetEmail=' . urlencode($targetEmail) . '&key=' . md5($keyData);
 
-      $this->statHat->addStatName('subscriptionsLinkGenerator Success');
+      $this->statHat->ezCount('MB_Toolbox: subscriptionsLinkGenerator - Success');
     }
 
-    $this->statHat->reportCount(1);
     return $subscriptionLink;
   }
 
@@ -382,6 +374,7 @@ class MB_Toolbox
 
     // Only add token and cookie values to header when values are available and
     // the curlPOSTauth() method is making the POST request.
+    $northstarConfig = $this->mbConfig->getProperty('northstar_config');
     if (isset($this->auth->token) && $isAuth) {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
@@ -392,13 +385,13 @@ class MB_Toolbox
         )
       );
     }
-    elseif (strpos($curlUrl, 'api.dosomething') !== FALSE && isset($this->settings['northstar_api_id']) && isset($this->settings['northstar_api_key'])) {
+    elseif (strpos($curlUrl, 'api.dosomething') !== FALSE && isset($northstarConfig['id']) && isset($northstarConfig['key'])) {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
           'Accept: application/json',
-          'X-DS-Application-Id: ' . $this->settings['northstar_api_id'],
-          'X-DS-REST-API-Key: ' . $this->settings['northstar_api_key'],
+          'X-DS-Application-Id: ' . $northstarConfig['id'],
+          'X-DS-REST-API-Key: ' . $northstarConfig['key'],
         )
       );
     }
@@ -576,10 +569,10 @@ class MB_Toolbox
    */
   private function authenticate() {
 
-    if (!empty($this->settings['ds_drupal_api_username']) && !empty($this->settings['ds_drupal_api_password'])) {
+    if (!empty($this->mbConfig->getProperty('ds_drupal_api_username')) && !empty($this->mbConfig->getProperty('ds_drupal_api_password'))) {
       $post = array(
-        'username' => $this->settings['ds_drupal_api_username'],
-        'password' => $this->settings['ds_drupal_api_password'],
+        'username' => $this->mbConfig->getProperty('ds_drupal_api_username'),
+        'password' => $this->mbConfig->getProperty('ds_drupal_api_password'),
       );
     }
     else {
@@ -588,8 +581,9 @@ class MB_Toolbox
     }
 
     // @todo: Abstract into it's own function
-    $curlUrl = $this->settings['ds_drupal_api_host'];
-    $port = $this->settings['ds_drupal_api_port'];
+    
+    $curlUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
+    $port = $this->mbConfig->getProperty('ds_drupal_api_port');
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
