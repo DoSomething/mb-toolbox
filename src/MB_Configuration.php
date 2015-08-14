@@ -73,6 +73,9 @@ class MB_Configuration
    * Get property in MB_Configuration instance.
    */
   public function getProperty($key) {
+    if (!isset($this->configSettings[$key])) {
+      echo 'MB_Configuration->getProperty() - Error: ' . $key . ' not defined.', PHP_EOL;
+    }
     return $this->configSettings[$key];
   }
 
@@ -118,21 +121,26 @@ class MB_Configuration
     }
     else {
       foreach ($targetQueues as $queue) {
-        $config['queue'][] = array(
-          'name' => $exchangeSettings->queues->$queue->name,
-          'passive' => $exchangeSettings->queues->$queue->passive,
-          'durable' =>  $exchangeSettings->queues->$queue->durable,
-          'exclusive' =>  $exchangeSettings->queues->$queue->exclusive,
-          'auto_delete' =>  $exchangeSettings->queues->$queue->auto_delete,
-          'bindingKey' => $exchangeSettings->queues->$queue->binding_key,
-        );
-        if (isset($exchangeSettings->queues->$queue->consume)) {
-          $config['consume'] = array(
-            'no_local' => $exchangeSettings->queues->$queue->consume->no_local,
-            'no_ack' => $exchangeSettings->queues->$queue->consume->no_ack,
-            'nowait' => $exchangeSettings->queues->$queue->consume->nowait,
-            'exclusive' => $exchangeSettings->queues->$queue->consume->exclusive,
+        if (isset($exchangeSettings->queues->$queue->name)) {
+          $config['queue'][] = array(
+            'name' => $exchangeSettings->queues->$queue->name,
+            'passive' => $exchangeSettings->queues->$queue->passive,
+            'durable' =>  $exchangeSettings->queues->$queue->durable,
+            'exclusive' =>  $exchangeSettings->queues->$queue->exclusive,
+            'auto_delete' =>  $exchangeSettings->queues->$queue->auto_delete,
+            'bindingKey' => $exchangeSettings->queues->$queue->binding_key,
           );
+          if (isset($exchangeSettings->queues->$queue->consume)) {
+            $config['consume'] = array(
+              'no_local' => $exchangeSettings->queues->$queue->consume->no_local,
+              'no_ack' => $exchangeSettings->queues->$queue->consume->no_ack,
+              'nowait' => $exchangeSettings->queues->$queue->consume->nowait,
+              'exclusive' => $exchangeSettings->queues->$queue->consume->exclusive,
+            );
+          }
+        }
+        else {
+          echo 'MB_Configuration->constructRabbitConfig(): Error - ' . $queue . ' settings not found.', PHP_EOL;
         }
       }
     }
@@ -151,6 +159,7 @@ class MB_Configuration
    */
   public function exchangeSettings($targetExchange) {
 
+    $settings = NULL;
     if (isset($this->configSettings['configFile']->rabbit->exchanges)) {
       foreach($this->configSettings['configFile']->rabbit->exchanges as $exchange => $exchangeSettings) {
         if ($exchange == $targetExchange) {
@@ -160,6 +169,12 @@ class MB_Configuration
     }
     else {
       echo 'Error - No exchange settings found.', PHP_EOL;
+    }
+
+    // Trap exchange not found
+    if ($settings == NULL) {
+      echo 'MB_Configuration->exchangeSettings(): Error - ' . $targetExchange . ' not found in config settings.';
+      exit;
     }
 
     return $settings;
