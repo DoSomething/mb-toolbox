@@ -75,6 +75,7 @@ class MB_Configuration
   public function getProperty($key) {
     if (!isset($this->configSettings[$key])) {
       echo 'MB_Configuration->getProperty() - Error: ' . $key . ' not defined.', PHP_EOL;
+      exit;
     }
     return $this->configSettings[$key];
   }
