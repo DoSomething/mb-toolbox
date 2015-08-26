@@ -67,24 +67,22 @@ abstract class MB_Toolbox_BaseConsumer
   protected $throttleSecondStamp = NULL;
 
   /**
+   * startTime - The date the request message started to be generated.
+   *
+   * @var string $startTime
+   */
+  protected $startTime;
+
+  /**
    * Constructor for MBC_BaseConsumer - all consumer applications should extend this base class.
    *
-   * @param object $messageBroker
+   * @param string $targetMBconfig
    *   The Message Broker object used to interface the RabbitMQ server exchanges and related queues.
-   *  
-   * @param object $statHat
-   *   Track application activity by triggering counters in StatHat service.
-   *
-   * @param object $toolbox
-   *   A collection of common tools for the Message Broker system.
-   *   
-   * @param array $settings
-   *   Settings from internal and external services used by the application.
    */
-  public function __construct() {
+  public function __construct($targetMBconfig = 'messageBroker') {
 
     $this->mbConfig = MB_Configuration::getInstance();
-    $this->messageBroker = $this->mbConfig->getProperty('messageBroker');
+    $this->messageBroker = $this->mbConfig->getProperty($targetMBconfig);
     $this->statHat = $this->mbConfig->getProperty('statHat');
     $this->toolbox = $this->mbConfig->getProperty('mbToolbox');
   }
