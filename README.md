@@ -5,10 +5,6 @@ mb-toolbox
 A collection of classes and related methods that provide common functionality for many of the producers and consumers applications within the Message Broker system.
 
 ####class MB_Toolbox
-```
-@param array $settings
-  Connection and configuration settings common to the application
-```
 **Methods**
 - isDSAffiliate($targetCountyCode)
 - createDrupalUser($user)
@@ -17,8 +13,32 @@ A collection of classes and related methods that provide common functionality fo
 - subscriptionsLinkGenerator($targetEmail)
 - curlPOST($curlUrl, $post)
 - curlPOSTauth($curlUrl, $post)
-- curlGET($curlUrl)
+- curlDELETE($curlUrl)
+- curlDELETEauth($curlUrl)
+- authenticate()
+
+
+####class MB_Toolbox_cURL
+**Methods**
+- curlGET($curlUrl, $isAuth = FALSE)
 - curlGETauth($curlUrl)
+- curlGETImage($imageUrl)
+- authenticate()
+
+
+####class MB_Toolbox_BaseConsumer
+```
+@param string $targetMBconfig
+The Message Broker object used to interface the RabbitMQ server exchanges and related queues.
+$targetMBconfig = 'messageBroker'
+```
+**Methods**
+- consumeQueue($payload)
+- throttle($maxMessageRate)
+**abstract protected**
+- setter($message)
+- canProcess()
+- process()
 
 ####class MB_MailChimp($settings)
 ```
@@ -40,10 +60,16 @@ Settings from external services - Mailchimp
 **Methods**
 - exchangeSettings($targetExchange)
 
-####class MB_Toolbox_cURL
+####class MB_Configuration
 ```
 @param array $settings
   Configuration settings defined by the application script accessing the library.
 ```
 **Methods**
-- curlGETImage($imageUrl): static public
+- private __construct()
+- static getInstance()
+- setProperty($key, $value)
+- getProperty($key)
+- constructRabbitConfig($targetExchange, $targetQueues = NULL)
+- exchangeSettings($targetExchange)
+- gatherSettings($targetSetting)
