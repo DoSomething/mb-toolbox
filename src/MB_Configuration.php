@@ -75,7 +75,7 @@ class MB_Configuration
   public function getProperty($key) {
     if (!isset($this->configSettings[$key])) {
       echo 'MB_Configuration->getProperty() - Error: ' . $key . ' not defined.', PHP_EOL;
-      exit;
+      return FALSE;
     }
     return $this->configSettings[$key];
   }
@@ -179,6 +179,37 @@ class MB_Configuration
     }
 
     return $settings;
+  }
+
+  /*
+   * gatherSettings(): Load "settings" section of mb_config.json into setting accessable by
+   * MB_Configuration methods.
+   *
+   * @param string $targetSetting
+   *   Request value of specific setting.
+   */
+  public function gatherSettings($targetSetting) {
+
+    // Load settings if not already available
+    $config = self::getProperty('settings');
+    if (!($config)) {
+      $config = self::_gatherSettings(CONFIG_PATH . '/mb_config.json');
+      self::setProperty('settings', $config->settings);
+    }
+
+    // Optional, method can simply store settings values
+    $foundSetting = NULL;
+    if ($targetSetting != NULL) {
+      if (isset($config->settings->$targetSetting)) {
+        $foundSetting = $config->settings->$targetSetting;
+        unset($foundSetting->__comment);
+      }
+      else {
+        $foundSetting = NULL;
+      }
+    }
+
+    return $foundSetting;
   }
 
   /**
