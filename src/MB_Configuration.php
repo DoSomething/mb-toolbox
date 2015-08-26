@@ -24,7 +24,7 @@ class MB_Configuration
    * @var array
    */
   private $configSettings = [];
-  
+
   /**
    * Instance of MB_Configuration class. Private and static to ensure access is only internal.
    */
@@ -74,7 +74,7 @@ class MB_Configuration
    */
   public function getProperty($key) {
     if (!isset($this->configSettings[$key])) {
-      echo 'MB_Configuration->getProperty() - Error: ' . $key . ' not defined.', PHP_EOL;
+      echo 'MB_Configuration->getProperty() - Warning: "' . $key . '" not defined.', PHP_EOL;
       return FALSE;
     }
     return $this->configSettings[$key];
@@ -232,5 +232,5 @@ class MB_Configuration
     }
 
   }
-  
+
 }
