@@ -10,6 +10,7 @@ class MB_Toolbox
 {
 
   const DRUPAL_API = '/api/v1';
+  const DEFAULT_USERNAME = 'Doer';
 
   /**
    * Singleton instance of MB_Configuration application settings and service objects
