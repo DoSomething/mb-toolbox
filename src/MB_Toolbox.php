@@ -231,10 +231,13 @@ class MB_Toolbox
    */
   public function getDSMemberCount() {
 
-    $curlUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
-    $port = $this->mbConfig->getProperty('ds_drupal_api_port');
-    if ($port > 0 && is_numeric($port)) {
-      $curlUrl .= ':' . (int) $port;
+    $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
+    $curlUrl = $dsDrupalAPIConfig['host'];
+    if (isset($dsDrupalAPIConfig['port'])) {
+      $port = $dsDrupalAPIConfig['port'];
+      if ($port > 0 && is_numeric($port)) {
+        $curlUrl .= ':' . (int) $port;
+      }
     }
     $curlUrl .= self::DRUPAL_API . '/users/get_member_count';
 
@@ -328,13 +331,14 @@ class MB_Toolbox
     if ($drupalUID > 0) {
 
       // Build Subscription link path
-      if (strlen($this->mbConfig->getProperty('subscriptions_url')) > 0) {
-        $subscriptionsUrl = $this->mbConfig->getProperty('subscriptions_url');
+      $subscriptions = $this->mbConfig->getProperty('subscriptions_config');
+      if (strlen($subscriptions['host']) > 0) {
+        $subscriptionsUrl = $subscriptions['host'];
       }
       else {
-        $subscriptionsUrl = $this->mbConfig->getProperty('subscriptions_ip');
+        $subscriptionsUrl = $subscriptions['ip'];
       }
-      $port = $this->mbConfig->getProperty('subscriptions_port');
+      $port = $subscriptions['port'];
       if ($port > 0 && is_numeric($port)) {
          $subscriptionsUrl .= ':' . (int) $port;
       }
