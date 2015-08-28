@@ -49,7 +49,7 @@ abstract class MB_Toolbox_BaseConsumer
    *
    * @var object
    */
-  protected $toolbox;
+  protected $mbToolbox;
 
   /**
    * Value of message from queue to be consumed / processed.
