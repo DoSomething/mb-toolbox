@@ -8,9 +8,9 @@ namespace DoSomething\MB_Toolbox;
 use DoSomething\MBStatTracker\StatHat;
 
 /**
- * MB_Configuration class - application-level configuration for the Message Broker system. Settings
- * contained by the singleton instance is specific to the application and accessible to all
- * application classes.
+ * MB_Configuration class - application-level configuration the Message Broker
+ * system uses. Settings contained by the single instance is specific to the application and accessible
+ * to all application classes.
  *
  * The class uses the Singleton pattern. This ensures there is only one instance of the application
  * settings.
@@ -75,6 +75,8 @@ class MB_Configuration
   public function getProperty($key) {
     if (!isset($this->configSettings[$key])) {
       echo 'MB_Configuration->getProperty() - Warning: "' . $key . '" not defined.', PHP_EOL;
+      $callers = debug_backtrace();
+      echo '- Called from: ' . $callers[1]['function'], PHP_EOL;
       return FALSE;
     }
     return $this->configSettings[$key];
