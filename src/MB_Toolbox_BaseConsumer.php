@@ -30,6 +30,13 @@ abstract class MB_Toolbox_BaseConsumer
   protected $messageBroker;
 
   /**
+   * The channel use by the Message Broker connection to RabbitMQ
+   *
+   * @var object
+   */
+  protected $channel;
+
+  /**
    * StatHat object for logging of activity
    *
    * @var object
@@ -84,7 +91,10 @@ abstract class MB_Toolbox_BaseConsumer
     $this->mbConfig = MB_Configuration::getInstance();
     $this->messageBroker = $this->mbConfig->getProperty($targetMBconfig);
     $this->statHat = $this->mbConfig->getProperty('statHat');
-    $this->toolbox = $this->mbConfig->getProperty('mbToolbox');
+    $this->mbToolbox = $this->mbConfig->getProperty('mbToolbox');
+
+    $connection = $this->messageBroker->connection;
+    $this->channel = $connection->channel();
   }
 
   /**
@@ -125,6 +135,26 @@ abstract class MB_Toolbox_BaseConsumer
       echo '- Trottling activated, message rate: ' . $this->throttleMessageCount . '. Waiting for ' . MBC_BaseConsumer::THROTTLE_TIMEOUT . ' seconds.', PHP_EOL;
       $this->throttleMessageCount = 0;
     }
+  }
+
+  /**
+   * queueStatus(): Lookup the current message count of the queue that the applicaiton is connected to.
+   *
+   * return array $messageCount
+   *   The numnber of messages in the "ready" and "unacked" state.
+   */
+  protected function queueStatus() {
+
+    $messageBrokerConfig = $this->mbConfig->getProperty('messageBroker_config');
+
+    // Redeclare queue to get current status of existing queue
+    // Currently supports only the first queue: ['queue'][0]. Return values could support as many
+    // queues as encountered in config setting.
+    list($this->channel, $status) = $this->messageBroker->setupQueue($messageBrokerConfig['queue'][0]['name'], $this->channel);
+    $messageCount['ready'] = $status[1];
+    $queueStatus['unacked'] = $status[2];
+
+    return $messageCount;
   }
 
   /**
