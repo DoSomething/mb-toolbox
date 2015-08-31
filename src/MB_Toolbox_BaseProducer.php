@@ -3,7 +3,7 @@
  * A template for all producer classes within the Message Broker system.
  */
 // Adjust to DoSomething\MBP_UserDigest when moved to MB_Toolbox
-namespace DoSomething\MBP_UserDigest;
+namespace DoSomething\MB_Toolbox;
 
 use DoSomething\StatHat\Client as StatHat;
 use DoSomething\MB_Toolbox\MB_Configuration;
