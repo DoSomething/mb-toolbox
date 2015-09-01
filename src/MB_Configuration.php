@@ -83,10 +83,13 @@ class MB_Configuration
    *   Flag to enable / disable warning and traceback if property not found.
    */
   public function getProperty($key, $notifyWarnings = TRUE) {
-    if (!isset($this->configSettings[$key]) && $notifyWarnings) {
+    if (!(isset($this->configSettings[$key])) && $notifyWarnings) {
       echo 'MB_Configuration->getProperty() - Warning: "' . $key . '" not defined.', PHP_EOL;
       $callers = debug_backtrace();
       echo '- Called from: ' . $callers[1]['function'], PHP_EOL;
+      return FALSE;
+    }
+    elseif (!(isset($this->configSettings[$key]))) {
       return FALSE;
     }
     return $this->configSettings[$key];
