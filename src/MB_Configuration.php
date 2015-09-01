@@ -64,6 +64,11 @@ class MB_Configuration
    *
    * @todo: Add locking to prevent adding / editing of settings after addition of configuration
    * settings is complete.
+   *
+   * @param string $key
+   *   The name of the property.
+   * @param mixed $value
+   *   The value to store in the instance configSettings array object property.
    */
   public function setProperty($key, $value) {
     $this->configSettings[$key] = $value;
@@ -71,9 +76,14 @@ class MB_Configuration
 
   /**
    * Get property in MB_Configuration instance.
+   *
+   * @param string $key
+   *   The name of property to get.
+   * @param boolean $notifyWarnings
+   *   Flag to enable / disable warning and traceback if property not found.
    */
-  public function getProperty($key) {
-    if (!isset($this->configSettings[$key])) {
+  public function getProperty($key, $notifyWarnings = TRUE) {
+    if (!isset($this->configSettings[$key]) && $notifyWarnings) {
       echo 'MB_Configuration->getProperty() - Warning: "' . $key . '" not defined.', PHP_EOL;
       $callers = debug_backtrace();
       echo '- Called from: ' . $callers[1]['function'], PHP_EOL;
@@ -193,7 +203,7 @@ class MB_Configuration
   public function gatherSettings($targetSetting) {
 
     // Load settings if not already available
-    $config = self::getProperty('settings');
+    $config = self::getProperty('settings', FALSE);
     if (!($config)) {
       $config = self::_gatherSettings(CONFIG_PATH . '/mb_config.json');
       self::setProperty('settings', $config->settings);
