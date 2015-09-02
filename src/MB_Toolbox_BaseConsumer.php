@@ -4,6 +4,7 @@ namespace DoSomething\MB_Toolbox;
 
 use DoSomething\StatHat\Client as StatHat;
 use DoSomething\MB_Toolbox\MB_Toolbox;
+use DoSomething\MBC_DigestEmail\MBC_RabbitMQManagementAPI;
 
 /*
  * MBC_UserAPICampaignActivity.class.in: Used to process the transactionalQueue
@@ -92,6 +93,7 @@ abstract class MB_Toolbox_BaseConsumer
     $this->messageBroker = $this->mbConfig->getProperty($targetMBconfig);
     $this->statHat = $this->mbConfig->getProperty('statHat');
     $this->mbToolbox = $this->mbConfig->getProperty('mbToolbox');
+    $this->mbcRabbitMQManagementAPI = $this->mbConfig->getProperty('mbcRabbitMQManagementAPI');
 
     $connection = $this->messageBroker->connection;
     $this->channel = $connection->channel();
@@ -138,23 +140,19 @@ abstract class MB_Toolbox_BaseConsumer
   }
 
   /**
-   * queueStatus(): Lookup the current message count of the queue that the applicaiton is connected to.
+   * queueStatus(): Lookup the current message ready and unacked count of the queue that the
+   * applicaiton is connected to.
+   *
+   * @param string $targetQueue
+   *   The name of the queue to gather the stats from.
    *
    * return array $messageCount
    *   The numnber of messages in the "ready" and "unacked" state.
    */
-  protected function queueStatus() {
+  protected function queueStatus($targetQueue) {
 
-    $messageBrokerConfig = $this->mbConfig->getProperty('messageBroker_config');
-
-    // Redeclare queue to get current status of existing queue
-    // Currently supports only the first queue: ['queue'][0]. Return values could support as many
-    // queues as encountered in config setting.
-    list($this->channel, $status) = $this->messageBroker->setupQueue($messageBrokerConfig['queue'][0]['name'], $this->channel);
-    $messageCount['ready'] = $status[1];
-    $queueStatus['unacked'] = $status[2];
-
-    return $messageCount;
+    $queueStatus = $this->mbcRabbitMQManagementAPI->queueStatus($targetQueue);
+    return $queueStatus;
   }
 
   /**
