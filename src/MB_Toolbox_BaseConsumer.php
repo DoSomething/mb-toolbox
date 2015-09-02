@@ -4,7 +4,6 @@ namespace DoSomething\MB_Toolbox;
 
 use DoSomething\StatHat\Client as StatHat;
 use DoSomething\MB_Toolbox\MB_Toolbox;
-use DoSomething\MBC_DigestEmail\MBC_RabbitMQManagementAPI;
 
 /*
  * MBC_UserAPICampaignActivity.class.in: Used to process the transactionalQueue
@@ -18,68 +17,66 @@ abstract class MB_Toolbox_BaseConsumer
 
   /**
    * Singleton instance of MB_Configuration application settings and service objects
-   *
-   * @var object
+   * @var object $mbConfig
    */
   protected $mbConfig;
 
   /**
    * Message Broker connection to RabbitMQ
-   *
-   * @var object
+   * @var object $messageBroker
    */
   protected $messageBroker;
 
   /**
    * The channel use by the Message Broker connection to RabbitMQ
-   *
-   * @var object
+   * @var object $channel
    */
   protected $channel;
 
   /**
    * StatHat object for logging of activity
-   *
-   * @var object
+   * @var object $statHat
    */
   protected $statHat;
 
   /**
    * Message Broker Toolbox - collection of utility methods used by many of the
    * Message Broker producer and consumer applications.
-   *
-   * @var object
+   * @var object $mbToolbox
    */
   protected $mbToolbox;
 
   /**
    * Value of message from queue to be consumed / processed.
-   *
-   * @var array
+   * @var array $message
    */
   protected $message;
 
   /**
    * The number of messages that have been processed. Used to calculate the message rate
    * to trigger throttling.
-   *
-   * @var integer
+   * @var integer $throttleMessageCount
    */
   protected $throttleMessageCount = 0;
 
    /**
    * A second value to track the lapsed time to calculate the massage rate.
-   *
-   * @var integer
+   * @var integer $throttleSecondStamp
    */
   protected $throttleSecondStamp = NULL;
 
   /**
-   * startTime - The date the request message started to be generated.
-   *
+   * The date the request message started to be generated.
    * @var string $startTime
    */
   protected $startTime;
+
+  /**
+   * A connection object to the RabbitMQ Management API.
+   * @var object $mbRabbitMQManagementAPI
+   */
+  protected $mbRabbitMQManagementAPI;
+
 
   /**
    * Constructor for MBC_BaseConsumer - all consumer applications should extend this base class.
@@ -93,7 +90,7 @@ abstract class MB_Toolbox_BaseConsumer
     $this->messageBroker = $this->mbConfig->getProperty($targetMBconfig);
     $this->statHat = $this->mbConfig->getProperty('statHat');
     $this->mbToolbox = $this->mbConfig->getProperty('mbToolbox');
-    $this->mbcRabbitMQManagementAPI = $this->mbConfig->getProperty('mbcRabbitMQManagementAPI');
+    $this->mbRabbitMQManagementAPI = $this->mbConfig->getProperty('mbRabbitMQManagementAPI');
 
     $connection = $this->messageBroker->connection;
     $this->channel = $connection->channel();
@@ -151,7 +148,7 @@ abstract class MB_Toolbox_BaseConsumer
    */
   protected function queueStatus($targetQueue) {
 
-    $queueStatus = $this->mbcRabbitMQManagementAPI->queueStatus($targetQueue);
+    $queueStatus = $this->mbRabbitMQManagementAPI->queueStatus($targetQueue);
     return $queueStatus;
   }
 
