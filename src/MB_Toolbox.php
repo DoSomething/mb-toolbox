@@ -157,8 +157,9 @@ class MB_Toolbox
       }
 
       $ch = curl_init();
-      $drupalAPIUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
-      $port = $this->mbConfig->getProperty('ds_drupal_api_port');
+      $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
+      $drupalAPIUrl =  $dsDrupalAPIConfig['host'];
+      $port = $dsDrupalAPIConfig['port'];
       if ($port > 0 && is_numeric($port)) {
         $drupalAPIUrl .= ":{$port}";
       }
@@ -195,8 +196,9 @@ class MB_Toolbox
    */
   public function getPasswordResetURL($uid) {
 
-    $curlUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
-    $port = $this->mbConfig->getProperty('ds_drupal_api_port');
+    $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
+    $curlUrl = $dsDrupalAPIConfig['host'];
+    $port = $dsDrupalAPIConfig['port'];
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
@@ -280,14 +282,15 @@ class MB_Toolbox
   public function subscriptionsLinkGenerator($targetEmail, $drupalUID = NULL) {
 
     $subscriptionLink = '';
+    $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
+    $curlUrl = $dsDrupalAPIConfig['host'];
+    $port = $dsDrupalAPIConfig['port'];
+    if ($port != 0 && is_numeric($port)) {
+      $curlUrl .= ':' . (int) $port;
+    }
 
     // Gather Drupal NID
     if ($drupalUID == NULL) {
-      $curlUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
-      $port = $this->mbConfig->getProperty('ds_drupal_api_port');
-      if ($port > 0 && is_numeric($port)) {
-        $curlUrl .= ':' . (int) $port;
-      }
       $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' .  urlencode($targetEmail);
 
       $result = $this->curlGETauth($curlUrl);
@@ -296,11 +299,6 @@ class MB_Toolbox
         $drupalUID = (int) $result[0][0]->uid;
       }
       elseif ($result[1] == 200) {
-        $curlUrl = $this->mbConfig->getProperty('ds_user_api_host');
-        $port = $this->mbConfig->getProperty('ds_user_api_port');
-        if ($port != 0 && is_numeric($port)) {
-          $curlUrl .= ':' . (int) $port;
-        }
 
         // DELETE user in mb-user-api as invalid
         $curlUrl .= '/user?email=' . urlencode($targetEmail) . '&exactCase=1';
@@ -501,10 +499,12 @@ class MB_Toolbox
    */
   private function authenticate() {
 
-    if (!empty($this->mbConfig->getProperty('ds_drupal_api_username')) && !empty($this->mbConfig->getProperty('ds_drupal_api_password'))) {
+    $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
+
+    if (!empty($dsDrupalAPIConfig['username']) && !empty($dsDrupalAPIConfig['password'])) {
       $post = array(
-        'username' => $this->mbConfig->getProperty('ds_drupal_api_username'),
-        'password' => $this->mbConfig->getProperty('ds_drupal_api_password'),
+        'username' => $dsDrupalAPIConfig['username'],
+        'password' => $dsDrupalAPIConfig['password'],
       );
     }
     else {
@@ -513,9 +513,8 @@ class MB_Toolbox
     }
 
     // @todo: Abstract into it's own function
-    
-    $curlUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
-    $port = $this->mbConfig->getProperty('ds_drupal_api_port');
+    $curlUrl = $dsDrupalAPIConfig['host'];
+    $port = $dsDrupalAPIConfig['port'];
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
