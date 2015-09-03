@@ -161,10 +161,12 @@ class MB_Toolbox_cURL
    */
   private function authenticate() {
 
+    $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
+
     if (!empty($this->mbConfig->getProperty('ds_drupal_api_username')) && !empty($this->mbConfig->getProperty('ds_drupal_api_password'))) {
       $post = array(
-        'username' => $this->mbConfig->getProperty('ds_drupal_api_username'),
-        'password' => $this->mbConfig->getProperty('ds_drupal_api_password'),
+        'username' => $dsDrupalAPIConfig['username'],
+        'password' =>  $dsDrupalAPIConfig['password'],
       );
     }
     else {
@@ -173,8 +175,8 @@ class MB_Toolbox_cURL
     }
 
     // @todo: Abstract into URL assembly function
-    $curlUrl = $this->mbConfig->getProperty('ds_drupal_api_host');
-    $port = $this->mbConfig->getProperty('ds_drupal_api_port');
+    $curlUrl = $dsDrupalAPIConfig['host'];
+    $port = $dsDrupalAPIConfig['port'];
     if ($port > 0 && is_numeric($port)) {
       $curlUrl .= ':' . (int) $port;
     }
