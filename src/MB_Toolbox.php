@@ -4,6 +4,8 @@
  */
 
 namespace DoSomething\MB_Toolbox;
+
+use DoSomething\MB_Toolbox\MB_Toolbox_cURL;
 use DoSomething\MBStatTracker\StatHat;
 
 class MB_Toolbox
@@ -14,22 +16,25 @@ class MB_Toolbox
 
   /**
    * Singleton instance of MB_Configuration application settings and service objects
-   *
-   * @var object
+   * @var object $mbConfig
    */
   private $mbConfig;
 
   /**
+   * General tools for the Message Broker system related to making cURL calls.
+   * @var object $mbToolboxcURL
+   */
+  private $mbToolboxcURL;
+
+  /**
    * Setting from external service to track activity - StatHat.
-   *
-   * @var object
+   * @var object $statHat
    */
   private $statHat;
 
   /**
    * Authentication details from Drupal site
-   *
-   * @var object
+   * @var object $auth
    */
   private $auth;
 
@@ -50,6 +55,7 @@ class MB_Toolbox
 
     $this->mbConfig = MB_Configuration::getInstance();
     $this->statHat = $this->mbConfig->getProperty('statHat');
+    $this->mbToolboxcURL = new MB_Toolbox_cURL();
   }
 
   /**
@@ -293,25 +299,13 @@ class MB_Toolbox
     if ($drupalUID == NULL) {
       $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' .  urlencode($targetEmail);
 
-      $result = $this->curlGETauth($curlUrl);
+      $result = $this->mbToolboxcURL->curlGETauth($curlUrl);
 
       if (isset($result[0][0]->uid)) {
         $drupalUID = (int) $result[0][0]->uid;
       }
       elseif ($result[1] == 200) {
 
-        // DELETE user in mb-user-api as invalid
-        $curlUrl .= '/user?email=' . urlencode($targetEmail) . '&exactCase=1';
-        $results = $this->curlDELETE($curlUrl);
-
-        if ($results[1] == 200) {
-          echo '- SUCCESS - User cleanup of ' . $targetEmail . ' deleted from mb-user as no match found in Drupal user table.', PHP_EOL;
-          $this->statHat->ezCount('MB_Toolbox: subscriptionsLinkGenerator - User deleted');
-        }
-        else {
-          echo 'ERROR - Failed to delete user document in mb-user due to Drupal user not found by email: ' . $targetEmail, PHP_EOL;
-          $this->statHat->ezCount('MB_Toolbox: subscriptionsLinkGenerator - failed to delete User document');
-        }
         echo '- ERROR - Drupal user not found by email: ' .  $targetEmail, PHP_EOL;
         $subscriptionLink = 'ERROR - Drupal user not found by email.';
         $this->statHat->ezCount('MB_Toolbox: subscriptionsLinkGenerator - ERROR - Drupal user not found by email');
