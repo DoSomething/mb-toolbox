@@ -1,13 +1,15 @@
 <?php
 /*
- * Message Broker ("MB") toolbox class library
+ * Message Broker ("MB") toolbox class library for functionality related to CURL requests.
  */
 
 namespace DoSomething\MB_Toolbox;
 
-use DoSomething\MB_Toolbox\MB_ToolboxL;
 use DoSomething\MBStatTracker\StatHat;
 
+/**
+ * MB_Toolbox_cURL:
+ */
 class MB_Toolbox_cURL
 {
 
@@ -20,12 +22,6 @@ class MB_Toolbox_cURL
    * @var object
    */
   protected $mbConfig;
-
-  /**
-   * General tools for the Message Broker system.
-   * @var object $mbToolbox
-   */
-  private $mbToolbox;
 
   /**
    * Setting from external service to track activity - StatHat.
@@ -60,7 +56,6 @@ class MB_Toolbox_cURL
 
     $this->mbConfig = MB_Configuration::getInstance();
     $this->statHat = $this->mbConfig->getProperty('statHat');
-    $this->mbToolbox = new MB_Toolbox();
   }
 
   /**
@@ -166,6 +161,150 @@ class MB_Toolbox_cURL
   }
 
   /**
+   * cURL POSTs
+   *
+   * @param string $curlUrl
+   *  The URL to POST to. Include domain and path.
+   * @param array $post
+   *  The values to POST.
+   * @param boolean $isAuth
+   *  Optional flag to denote if the method is being called from curlPOSTauth().
+   *
+   * @return object $result
+   *   The results returned from the cURL call as an array:
+   *   - [0]: Results in json format
+   *   - [1]: Status code
+   */
+  public function curlPOST($curlUrl, $post, $isAuth = FALSE) {
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $curlUrl);
+    curl_setopt($ch, CURLOPT_POST, count($post));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, 3);
+    curl_setopt($ch,CURLOPT_TIMEOUT, 20);
+
+    // Only add token and cookie values to header when values are available and
+    // the curlPOSTauth() method is making the POST request.
+    $northstarConfig = $this->mbConfig->getProperty('northstar_config');
+    if (isset($this->auth->token) && $isAuth) {
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json',
+          'X-CSRF-Token: ' . $this->auth->token,
+          'Cookie: ' . $this->auth->session_name . '=' . $this->auth->sessid
+        )
+      );
+    }
+    elseif (strpos($curlUrl, 'api.dosomething') !== FALSE && isset($northstarConfig['id']) && isset($northstarConfig['key'])) {
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json',
+          'X-DS-Application-Id: ' . $northstarConfig['id'],
+          'X-DS-REST-API-Key: ' . $northstarConfig['key'],
+        )
+      );
+    }
+    elseif (strpos($curlUrl, 'api.dosomething') !== FALSE) {
+      trigger_error("MB_Toolbox->curlPOST() : Northstar settings not defined.", E_USER_ERROR);
+    }
+    else {
+      curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array(
+          'Content-type: application/json',
+          'Accept: application/json'
+        )
+      );
+    }
+
+    $jsonResult = curl_exec($ch);
+
+    $results[0] = json_decode($jsonResult);
+    $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    return $results;
+  }
+
+  /**
+   * cURL POSTs with authentication
+   *
+   * @param string $curlUrl
+   *  The URL to POST to. Include domain and path.
+   * @param array $post
+   *  The values to POST.
+   *
+   * @return object $result
+   *   The results returned from the cURL call.
+   */
+   public function curlPOSTauth($curlUrl, $post) {
+
+    // Remove authentication until POST to /api/v1/auth/login is resolved
+    if (!isset($this->auth)) {
+      $this->authenticate();
+    }
+
+    $results = $this->curlPOST($curlUrl, $post, TRUE);
+
+    return $results;
+  }
+
+  /**
+   * cURL DELETE
+   *
+   * @param string $curlUrl
+   *  The URL to DELETE from. Include domain and path.
+   *
+   * @return object $result
+   *   The results returned from the cURL call.
+   *   - [0]: Results in json format
+   *   - [1]: Status code
+   */
+  public function curlDELETE($curlUrl) {
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $curlUrl);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+    curl_setopt($ch, CURLOPT_HEADER, TRUE);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+      'Accept: application/json',
+      'Content-Type: application/json',
+    ));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+    $jsonResult = curl_exec($ch);
+    $results[0] = json_decode($jsonResult);
+    $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    return $results;
+  }
+
+  /**
+   * cURL DELETE with authentication
+   *
+   * @param string $curlUrl
+   *  The URL to DELETE to. Include domain and path.
+   *
+   * @return object $result
+   *   The results returned from the cURL call.
+   */
+  public function curlDELETEauth($curlUrl) {
+
+    // Remove authentication until POST to /api/v1/auth/login is resolved
+    if (!isset($this->auth)) {
+      $this->authenticate();
+    }
+
+    $results = $this->curlDELETE($curlUrl, TRUE);
+
+    return $results;
+  }
+
+  /**
    * Authenticate for API access
    */
   private function authenticate() {
@@ -192,7 +331,7 @@ class MB_Toolbox_cURL
 
     // https://www.dosomething.org/api/v1/auth/login
     $curlUrl .= self::DRUPAL_API . '/auth/login';
-    $auth = $this->mbToolbox->curlPOST($curlUrl, $post);
+    $auth = $this->curlPOST($curlUrl, $post);
 
     if ($auth[1] == 200) {
       $auth = $auth[0];
