@@ -311,10 +311,10 @@ class MB_Toolbox_cURL
 
     $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
 
-    if (!empty($this->mbConfig->getProperty('ds_drupal_api_username')) && !empty($this->mbConfig->getProperty('ds_drupal_api_password'))) {
+    if (!empty($dsDrupalAPIConfig['username']) && !empty($dsDrupalAPIConfig['password'])) {
       $post = array(
         'username' => $dsDrupalAPIConfig['username'],
-        'password' =>  $dsDrupalAPIConfig['password'],
+        'password' => $dsDrupalAPIConfig['password'],
       );
     }
     else {
