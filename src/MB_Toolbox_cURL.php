@@ -4,6 +4,8 @@
  */
 
 namespace DoSomething\MB_Toolbox;
+
+use DoSomething\MB_Toolbox\MB_ToolboxL;
 use DoSomething\MBStatTracker\StatHat;
 
 class MB_Toolbox_cURL
@@ -18,6 +20,12 @@ class MB_Toolbox_cURL
    * @var object
    */
   protected $mbConfig;
+
+  /**
+   * General tools for the Message Broker system.
+   * @var object $mbToolbox
+   */
+  private $mbToolbox;
 
   /**
    * Setting from external service to track activity - StatHat.
@@ -52,6 +60,7 @@ class MB_Toolbox_cURL
 
     $this->mbConfig = MB_Configuration::getInstance();
     $this->statHat = $this->mbConfig->getProperty('statHat');
+    $this->mbToolbox = new MB_Toolbox();
   }
 
   /**
@@ -183,7 +192,7 @@ class MB_Toolbox_cURL
 
     // https://www.dosomething.org/api/v1/auth/login
     $curlUrl .= self::DRUPAL_API . '/auth/login';
-    $auth = $this->curlPOST($curlUrl, $post);
+    $auth = $this->mbToolbox->curlPOST($curlUrl, $post);
 
     if ($auth[1] == 200) {
       $auth = $auth[0];
