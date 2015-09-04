@@ -170,7 +170,7 @@ class MB_Toolbox
         $drupalAPIUrl .= ":{$port}";
       }
       $drupalAPIUrl .= self::DRUPAL_API . '/users';
-      $result = $this->curlPOST($drupalAPIUrl, $post);
+      $result = $this->mbToolboxcURL->curlPOST($drupalAPIUrl, $post);
       $this->statHat->ezCount('MB_Toolbox: Requested createDrupalUser');
 
       if (is_array($result)) {
@@ -214,7 +214,7 @@ class MB_Toolbox
     // expecting POST rather than GET where there's no POST values expected.
     $post = array();
 
-    $result = $this->curlPOSTauth($curlUrl, $post);
+    $result = $this->mbToolboxcURL->curlPOSTauth($curlUrl, $post);
     if (isset($result[0][0])) {
       $resetUrl = $result[0][0];
       $this->statHat->ezCount('MB_Toolbox: getPasswordResetURL');
@@ -253,7 +253,7 @@ class MB_Toolbox
     // expecting POST rather than GET where there's no POST values expected.
     $post = array();
 
-    $result = $this->curlPOST($curlUrl, $post);
+    $result = $this->mbToolboxcURL->curlPOST($curlUrl, $post);
     if (isset($result[0]->readable)) {
       $memberCountFormatted = $result[0]->readable;
       $this->statHat->ezCount('MB_Toolbox: getDSMemberCount');
@@ -342,190 +342,6 @@ class MB_Toolbox
     }
 
     return $subscriptionLink;
-  }
-
-  /**
-   * cURL POSTs
-   *
-   * @param string $curlUrl
-   *  The URL to POST to. Include domain and path.
-   * @param array $post
-   *  The values to POST.
-   * @param boolean $isAuth
-   *  Optional flag to denote if the method is being called from curlPOSTauth().
-   *
-   * @return object $result
-   *   The results returned from the cURL call as an array:
-   *   - [0]: Results in json format
-   *   - [1]: Status code
-   */
-  public function curlPOST($curlUrl, $post, $isAuth = FALSE) {
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $curlUrl);
-    curl_setopt($ch, CURLOPT_POST, count($post));
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, 3);
-    curl_setopt($ch,CURLOPT_TIMEOUT, 20);
-
-    // Only add token and cookie values to header when values are available and
-    // the curlPOSTauth() method is making the POST request.
-    $northstarConfig = $this->mbConfig->getProperty('northstar_config');
-    if (isset($this->auth->token) && $isAuth) {
-      curl_setopt($ch, CURLOPT_HTTPHEADER,
-        array(
-          'Content-type: application/json',
-          'Accept: application/json',
-          'X-CSRF-Token: ' . $this->auth->token,
-          'Cookie: ' . $this->auth->session_name . '=' . $this->auth->sessid
-        )
-      );
-    }
-    elseif (strpos($curlUrl, 'api.dosomething') !== FALSE && isset($northstarConfig['id']) && isset($northstarConfig['key'])) {
-      curl_setopt($ch, CURLOPT_HTTPHEADER,
-        array(
-          'Content-type: application/json',
-          'Accept: application/json',
-          'X-DS-Application-Id: ' . $northstarConfig['id'],
-          'X-DS-REST-API-Key: ' . $northstarConfig['key'],
-        )
-      );
-    }
-    elseif (strpos($curlUrl, 'api.dosomething') !== FALSE) {
-      trigger_error("MB_Toolbox->curlPOST() : Northstar settings not defined.", E_USER_ERROR);
-    }
-    else {
-      curl_setopt($ch, CURLOPT_HTTPHEADER,
-        array(
-          'Content-type: application/json',
-          'Accept: application/json'
-        )
-      );
-    }
-
-    $jsonResult = curl_exec($ch);
-
-    $results[0] = json_decode($jsonResult);
-    $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    return $results;
-  }
-
-  /**
-   * cURL POSTs with authentication
-   *
-   * @param string $curlUrl
-   *  The URL to POST to. Include domain and path.
-   * @param array $post
-   *  The values to POST.
-   *
-   * @return object $result
-   *   The results returned from the cURL call.
-   */
-   public function curlPOSTauth($curlUrl, $post) {
-
-    // Remove authentication until POST to /api/v1/auth/login is resolved
-    if (!isset($this->auth)) {
-      $this->authenticate();
-    }
-
-    $results = $this->curlPOST($curlUrl, $post, TRUE);
-
-    return $results;
-  }
-
-  /**
-   * cURL DELETE
-   *
-   * @param string $curlUrl
-   *  The URL to DELETE from. Include domain and path.
-   *
-   * @return object $result
-   *   The results returned from the cURL call.
-   *   - [0]: Results in json format
-   *   - [1]: Status code
-   */
-  public function curlDELETE($curlUrl) {
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $curlUrl);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-    curl_setopt($ch, CURLOPT_HEADER, TRUE);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-      'Accept: application/json',
-      'Content-Type: application/json',
-    ));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-    $jsonResult = curl_exec($ch);
-    $results[0] = json_decode($jsonResult);
-    $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    return $results;
-  }
-
-  /**
-   * cURL DELETE with authentication
-   *
-   * @param string $curlUrl
-   *  The URL to DELETE to. Include domain and path.
-   *
-   * @return object $result
-   *   The results returned from the cURL call.
-   */
-  public function curlDELETEauth($curlUrl) {
-
-    // Remove authentication until POST to /api/v1/auth/login is resolved
-    if (!isset($this->auth)) {
-      $this->authenticate();
-    }
-
-    $results = $this->curlDELETE($curlUrl, TRUE);
-
-    return $results;
-  }
-
-  /**
-   * Authenticate for API access
-   */
-  private function authenticate() {
-
-    $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
-
-    if (!empty($dsDrupalAPIConfig['username']) && !empty($dsDrupalAPIConfig['password'])) {
-      $post = array(
-        'username' => $dsDrupalAPIConfig['username'],
-        'password' => $dsDrupalAPIConfig['password'],
-      );
-    }
-    else {
-      trigger_error("MB_Toolbox->authenticate() : username and/or password not defined.", E_USER_ERROR);
-      exit(0);
-    }
-
-    // @todo: Abstract into it's own function
-    $curlUrl = $dsDrupalAPIConfig['host'];
-    $port = $dsDrupalAPIConfig['port'];
-    if ($port > 0 && is_numeric($port)) {
-      $curlUrl .= ':' . (int) $port;
-    }
-
-    // https://www.dosomething.org/api/v1/auth/login
-    $curlUrl .= self::DRUPAL_API . '/auth/login';
-    $auth = $this->curlPOST($curlUrl, $post);
-
-    if ($auth[1] == 200) {
-      $auth = $auth[0];
-    }
-    else {
-      ECHO 'ERROR - Failed to get auth creds: ' . $curlUrl . ' with POST: ' . print_r($post, TRUE), PHP_EOL;
-      $auth = FALSE;
-    }
-
-    $this->auth = $auth;
   }
 
 }
