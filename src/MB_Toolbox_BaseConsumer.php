@@ -87,6 +87,7 @@ abstract class MB_Toolbox_BaseConsumer
   public function __construct($targetMBconfig = 'messageBroker') {
 
     $this->mbConfig = MB_Configuration::getInstance();
+    $this->settings = $this->mbConfig->getProperty('generalSettings');
     $this->messageBroker = $this->mbConfig->getProperty($targetMBconfig);
     $this->statHat = $this->mbConfig->getProperty('statHat');
     $this->mbToolbox = $this->mbConfig->getProperty('mbToolbox');
