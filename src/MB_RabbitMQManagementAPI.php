@@ -56,6 +56,7 @@ class MB_RabbitMQManagementAPI
     $port = $conig['port'];
     $vhost = $conig['vhost'];
     $this->vhost = $vhost;
+    $username = $conig['username'];
     $password = $conig['password'];
 
     if ($port > 0 && is_numeric($port)) {
@@ -65,7 +66,7 @@ class MB_RabbitMQManagementAPI
     $this->rabbitManagement = new RabbitMqManagementApi(
       NULL,
       $domain,
-      $vhost,
+      $username,
       $password
     );
     
