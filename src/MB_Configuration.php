@@ -122,8 +122,8 @@ class MB_Configuration
     if ($config['exchange']['type'] == "topic") {
       foreach ($exchangeSettings->queues as $queueSetting) {
         if (in_array($queueSetting->name, $targetQueues) || $targetQueues == NULL) {
-          foreach ($queueSetting->binding_patterns as $bindingKey) {
-            $config['queue'][] = array(
+          foreach ($queueSetting->binding_patterns as $bindingKeyCount => $bindingKey) {
+            $config['queue'][$bindingKeyCount] = array(
               'name' => $queueSetting->name,
               'passive' => $queueSetting->passive,
               'durable' =>  $queueSetting->durable,
@@ -131,6 +131,14 @@ class MB_Configuration
               'auto_delete' =>  $queueSetting->auto_delete,
               'bindingKey' => $bindingKey,
             );
+            if (isset($queueSetting->consume)) {
+              $config['consume'] = array(
+                'no_local' => $queueSetting->consume->no_local,
+                'no_ack' => $queueSetting->consume->no_ack,
+                'nowait' => $queueSetting->consume->nowait,
+                'exclusive' => $queueSetting->consume->exclusive,
+              );
+            }
           }
         }
       }
