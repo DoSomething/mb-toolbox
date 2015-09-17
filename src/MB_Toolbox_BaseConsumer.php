@@ -1,12 +1,17 @@
 <?php
+/**
+ * Base class for classes within the Message Broker system to extend. Focused on consuming
+ * messages from queues a RabbitMQ server.
+ */
 
 namespace DoSomething\MB_Toolbox;
 
+use DoSomething\MB_Toolbox\MB_Configuration;
+use DoSomething\MB_Toolbox\MB_RabbitMQManagementAPI;
 use DoSomething\StatHat\Client as StatHat;
-use DoSomething\MB_Toolbox\MB_Toolbox;
 
 /*
- * MBC_UserAPICampaignActivity.class.in: Used to process the transactionalQueue
+ * MB_Toolbox_BaseConsumer(): Used to process the transactionalQueue
  * entries that match the campaign.*.* binding.
  */
 abstract class MB_Toolbox_BaseConsumer
@@ -87,14 +92,70 @@ abstract class MB_Toolbox_BaseConsumer
   public function __construct($targetMBconfig = 'messageBroker') {
 
     $this->mbConfig = MB_Configuration::getInstance();
+    $this->initProperties();
+
     $this->settings = $this->mbConfig->getProperty('generalSettings');
     $this->messageBroker = $this->mbConfig->getProperty($targetMBconfig);
     $this->statHat = $this->mbConfig->getProperty('statHat');
-    $this->mbToolbox = $this->mbConfig->getProperty('mbToolbox');
     $this->mbRabbitMQManagementAPI = $this->mbConfig->getProperty('mbRabbitMQManagementAPI');
 
     $connection = $this->messageBroker->connection;
     $this->channel = $connection->channel();
+  }
+
+  /**
+   * initProperties(): Load and store settings in MB_Configuration singleton instance.
+   */
+  private function initProperties() {
+
+    $generalSettings = $this->mbConfig->gatherSettings('general');
+    $this->mbConfig->setProperty('generalSettings', [
+      'default' => [
+      'first_name' => $generalSettings->default->first_name
+      ],
+      'email' => [
+        'from' => $generalSettings->email->from,
+        'name' => $generalSettings->email->name,
+      ]
+    ]);
+
+    // Load secure, not tracked in version control, settings specific to the platform.
+    require_once __DIR__ . '/messagebroker-config/mb-secure-config.inc';
+
+    $this->mbConfig->setProperty('rabbit_credentials', [
+      'host' =>  getenv("RABBITMQ_HOST"),
+      'port' => getenv("RABBITMQ_PORT"),
+      'username' => getenv("RABBITMQ_USERNAME"),
+      'password' => getenv("RABBITMQ_PASSWORD"),
+      'vhost' => getenv("RABBITMQ_VHOST"),
+    ]);
+    $this->mbConfig->setProperty('rabbitapi_credentials', [
+      'host' =>  getenv("MB_RABBITMQ_MANAGEMENT_API_HOST"),
+      'port' => getenv("MB_RABBITMQ_MANAGEMENT_API_PORT"),
+      'username' => getenv("MB_RABBITMQ_MANAGEMENT_API_USERNAME"),
+      'password' => getenv("MB_RABBITMQ_MANAGEMENT_API_PASSWORD"),
+    ]);
+
+    // Create connection to exchange and queue for processing of queue contents.
+    $mbRabbitConfig = $this->mbConfig->constructRabbitConfig('transactionalExchange', array('transactionalQueue'));
+    $this->mbConfig->setProperty('messageBroker_config', $mbRabbitConfig);
+
+    $rabbitCredentials = $this->mbConfig->getProperty('rabbit_credentials');
+    $messageBrokerConfig = $this->mbConfig->getProperty('messageBroker_config');
+    $this->mbConfig->setProperty('messageBroker', new MessageBroker($rabbitCredentials, $messageBrokerConfig));
+
+    $mbConfig->setProperty('mbRabbitMQManagementAPI', new MB_RabbitMQManagementAPI([
+      'domain' => getenv("MB_RABBITMQ_MANAGEMENT_API_HOST"),
+      'port' => getenv('MB_RABBITMQ_MANAGEMENT_API_PORT'),
+      'vhost' => getenv('MB_RABBITMQ_MANAGEMENT_API_VHOST'),
+      'username' => getenv('MB_RABBITMQ_MANAGEMENT_API_USERNAME'),
+      'password' => getenv('MB_RABBITMQ_MANAGEMENT_API_PASSWORD')
+    ]));
+
+    $this->mbConfig->setProperty('statHat', new StatHat([
+      'ez_key' => getenv("STATHAT_EZKEY"),
+      'debug' => getenv("DISABLE_STAT_TRACKING")
+    ]));
   }
 
   /**
