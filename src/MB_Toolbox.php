@@ -85,6 +85,8 @@ class MB_Toolbox
       'GH', // Ghana
       'NG', // Nigeria
       'CD', // Congo, The Democratic Republic of the"
+      'BR', // Brazil
+      'MX', // Mexico
     );
 
     if (in_array($targetCountyCode, $affiliates)) {
