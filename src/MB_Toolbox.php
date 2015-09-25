@@ -99,6 +99,8 @@ class MB_Toolbox
         'GH' => 'https://ghana.dosomething.org',     // Ghana
         'NG' => 'https://nigeria.dosomething.org',   // Nigeria
         'CD' => 'https://congo.dosomething.org',     // Congo, The Democratic Republic of the"
+        'BR' => 'https://brazil.dosomething.org',    // Brazil
+        'MX' => 'https://mexico.dosomething.org',    // Mexico
       );
       $foundAffiliate['url'] = $affiliateURL[$targetCountyCode];
       $this->statHat->ezCount('MB_Toolbox: isDSAffiliate Found');
