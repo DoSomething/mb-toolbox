@@ -43,13 +43,6 @@ abstract class MB_Toolbox_BaseConsumer
   protected $statHat;
 
   /**
-   * Message Broker Toolbox - collection of utility methods used by many of the
-   * Message Broker producer and consumer applications.
-   * @var object $mbToolbox
-   */
-  protected $mbToolbox;
-
-  /**
    * Value of message from queue to be consumed / processed.
    * @var array $message
    */
