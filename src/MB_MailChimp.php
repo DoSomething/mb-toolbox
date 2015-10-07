@@ -29,8 +29,10 @@ class MB_MailChimp
   }
   
   /**
-   * Make signup submission to MailChimp
+   * Make batch signup submission to MailChimp list: lists/batch-subscribe
    *
+   * @param string $listID
+   *   A unique ID that defines what MailChimp list the batch should be added to
    * @param array $composedBatch
    *   The list of email address to be submitted to MailChimp
    *
@@ -38,33 +40,17 @@ class MB_MailChimp
    *   A list of the RabbitMQ queue entry IDs that have been successfully
    *   submitted to MailChimp.
    */
-  public function submitBatchToMailChimp($composedBatch = array()) {
-
-    // Debugging
-    // $results1 = $this->mailChimp->call("lists/list", array());
-
-    // DS Domestic: f2fab1dfd4
-    // Innternational: 8e7844f6dd
-    // $results2 = $this->mailChimp->call("lists/interest-groupings", array('id' => '8e7844f6dd'));
-
-    // batchSubscribe($id, $batch, $double_optin=true, $update_existing=false, $replace_interests=true)
-    // replace_interests: optional - flag to determine whether we replace the
-    // interest groups with the updated groups provided, or we add the provided
-    // groups to the member's interest groups (optional, defaults to true)
-        // Lookup list details including "mailchimp_list_id"
-    // -> 71893 "Do Something Members" is f2fab1dfd4 (who knows why?!?)
+  public function submitBatchToMailChimp($listID, $composedBatch = array()) {
 
     $results = $this->mailChimp->call("lists/batch-subscribe", array(
-      'id' => $this->settings['mailchimp_int_list_id'],
+      'id' => $listID,
       'batch' => $composedBatch,
       'double_optin' => FALSE,
       'update_existing' => TRUE,
       'replace_interests' => FALSE
     ));
 
-    $this->statHat->clearAddedStatNames();
-    $this->statHat->addStatName('submitBatchToMailChimp');
-    $this->statHat->reportCount(count($composedBatch));
+   // @todo: Add StatHat tracking point: submitBatchToMailChimp');
 
     return $results;
   }
@@ -109,7 +95,7 @@ class MB_MailChimp
    * @return array
    *   Array of email addresses formatted to meet MailChimp API requirements.
    */
-  private function composeSubscriberSubmission($newSubscribers = array()) {
+  public function composeSubscriberSubmission($newSubscribers = array()) {
 
     $composedSubscriberList = array();
     foreach ($newSubscribers as $newSubscriberCount => $newSubscriber) {
