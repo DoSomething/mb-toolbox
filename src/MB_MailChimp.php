@@ -49,8 +49,18 @@ class MB_MailChimp
       'update_existing' => TRUE,
       'replace_interests' => FALSE
     ));
-
-   // @todo: Add StatHat tracking point: submitBatchToMailChimp');
+    
+    // @todo: Throw exception when error is returned from MailChimp
+    /*
+      $results = [
+        code => 200
+        error => Invalid MailChimp List ID: 4f8e24d4f5
+        name => List_DoesNotExist
+        status => error
+      ]
+    */
+    
+    // @todo: Add StatHat tracking point: submitBatchToMailChimp');
 
     return $results;
   }
