@@ -49,17 +49,15 @@ class MB_MailChimp
       'update_existing' => TRUE,
       'replace_interests' => FALSE
     ));
-    
-    // @todo: Throw exception when error is returned from MailChimp
-    /*
-      $results = [
-        code => 200
-        error => Invalid MailChimp List ID: 4f8e24d4f5
-        name => List_DoesNotExist
-        status => error
-      ]
-    */
-    
+
+    // Trap errors
+    if (isset($results['error'])) {
+      throw new Exception('Call to lists/batch-subscribe returned error response: ' . $results['name'] . ': ' .  $results['error']);
+    }
+    elseif ($results == 0) {
+      throw new Exception('Hmmm: No results returned from MailChimp lists/batch-subscribe submisson. This often happens when the batch size is too large. ');
+    }
+
     // @todo: Add StatHat tracking point: submitBatchToMailChimp');
 
     return $results;
