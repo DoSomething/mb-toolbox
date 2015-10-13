@@ -7,6 +7,7 @@
 namespace DoSomething\MB_Toolbox;
 
 use \Drewm\MailChimp;
+use \Exception;
 
 class MB_MailChimp
 {
@@ -50,12 +51,14 @@ class MB_MailChimp
       'replace_interests' => FALSE
     ));
 
+    echo '- MB_MailChimp->submitBatchToMailChimp: results: ' . print_r($results, TRUE), PHP_EOL;
+
     // Trap errors
     if (isset($results['error'])) {
       throw new Exception('Call to lists/batch-subscribe returned error response: ' . $results['name'] . ': ' .  $results['error']);
     }
     elseif ($results == 0) {
-      throw new Exception('Hmmm: No results returned from MailChimp lists/batch-subscribe submisson. This often happens when the batch size is too large. ');
+      throw new Exception('Hmmm: No results returned from Mailchimp lists/batch-subscribe submisson. This often happens when the batch size is too large. ');
     }
 
     // @todo: Add StatHat tracking point: submitBatchToMailChimp');
