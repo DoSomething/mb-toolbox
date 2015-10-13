@@ -146,17 +146,8 @@ class MB_MailChimp
         'email' => array(
           'email' => $newSubscriber['email']
         ),
+        'merge_vars' => $mergeVars
       );
-
-      if (isset($newSubscriber['source'])) {
-        $mergeVars['groupings'] = array(
-          0 => array(
-            'id' => 10657,  // DoSomething Memebers -> Import Source
-            'groups' => array($newSubscriber['source'])
-          ),
-        );
-      }
-      $composedSubscriberList[$newSubscriberCount]['merge_vars'] = $mergeVars;
 
     }
 
