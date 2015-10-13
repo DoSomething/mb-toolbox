@@ -7,6 +7,7 @@
 namespace DoSomething\MB_Toolbox;
 
 use DoSomething\MB_Toolbox\MB_Configuration;
+use \Exception;
 
 /*
  * MB_Toolbox_BaseConsumer(): Used to process the transactionalQueue
@@ -102,9 +103,15 @@ abstract class MB_Toolbox_BaseConsumer
    */
   public function consumeQueue($payload) {
 
-    $this->message = unserialize($payload->body);
-    $this->message['original'] = $this->message;
-    $this->message['payload'] = $payload;
+    try {
+      $this->message = unserialize($payload->body);
+      $this->message['original'] = $this->message;
+      $this->message['payload'] = $payload;
+    }
+    catch(Exception $e) {
+      echo 'MB_Toolbox_BaseConsumer: Error unseralizing payload: consumeQueue(): ' . $e->getMessage();
+    }
+
   }
 
    /**
