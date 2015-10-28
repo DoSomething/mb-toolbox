@@ -41,7 +41,7 @@ class MB_MailChimp
    *   A list of the RabbitMQ queue entry IDs that have been successfully
    *   submitted to MailChimp.
    */
-  public function submitBatchToMailChimp($listID, $composedBatch = array()) {
+  public function submitBatchSubscribe($listID, $composedBatch = array()) {
 
     $results = $this->mailChimp->call("lists/batch-subscribe", array(
       'id' => $listID,
@@ -61,7 +61,7 @@ class MB_MailChimp
       throw new Exception('Hmmm: No results returned from Mailchimp lists/batch-subscribe submisson. This often happens when the batch size is too large. ');
     }
 
-    // @todo: Add StatHat tracking point: submitBatchToMailChimp');
+    // @todo: Add StatHat tracking point: submitBatchToMailChimp
 
     return $results;
   }
@@ -69,6 +69,8 @@ class MB_MailChimp
   /**
    * Make single signup submission to MailChimp. Typically used for resubscribes.
    *
+   * @param string $listID
+   *   A unique ID that defines what MailChimp list the batch should be added to
    * @param array $composedItem
    *   The the details of an email address to be submitted to MailChimp
    *
@@ -76,10 +78,10 @@ class MB_MailChimp
    *   A list of the RabbitMQ queue entry IDs that have been successfully
    *   submitted to MailChimp.
    */
-  public function submitToMailChimp($composedItem = array()) {
+  public function submitSubscribe($listID, $composedItem = array()) {
 
     $results = $this->mailChimp->call("lists/subscribe", array(
-      'id' => $this->settings['mailchimp_list_id'],
+      'id' => $listID,
       'email' => array(
         'email' => $composedItem['email']['email']
         ),
@@ -89,10 +91,16 @@ class MB_MailChimp
       'replace_interests' => FALSE,
       'send_welcome' => FALSE,
     ));
+    
+    // Trap errors
+    if (isset($results['error'])) {
+      throw new Exception('Call to lists/subscribe returned error response: ' . $results['name'] . ': ' .  $results['error']);
+    }
+    elseif ($results == 0) {
+      throw new Exception('Hmmm: No results returned from Mailchimp lists/subscribe submission.');
+    }
 
-    $this->statHat->clearAddedStatNames();
-    $this->statHat->addStatName('submitToMailChimp');
-    $this->statHat->reportCount(1);
+    // @todo: Add StatHat tracking point: submitBatchToMailChimp
 
     return $results;
   }
