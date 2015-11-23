@@ -114,6 +114,17 @@ abstract class MB_Toolbox_BaseConsumer
 
   }
 
+  /**
+   * Log payload with RabbitMQ objects removed for clarity.
+   */
+  private function reportErrorPayload() {
+
+    $errorPayload = $this->message;
+    unset($errorPayload['payload']);
+    unset($errorPayload['original']);
+    echo '-> message: ' . print_r($errorPayload, TRUE), PHP_EOL;
+  }
+
    /**
    * Throddle the rate the consumer processes messages.
    *
