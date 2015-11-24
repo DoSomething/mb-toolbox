@@ -101,7 +101,7 @@ abstract class MB_Toolbox_BaseConsumer
    * @param array $payload
    *   The contents of the queue entry
    */
-  public function consumeQueue($payload) {
+  protected function consumeQueue($payload) {
 
     try {
       $this->message = unserialize($payload->body);
@@ -117,7 +117,7 @@ abstract class MB_Toolbox_BaseConsumer
   /**
    * Log payload with RabbitMQ objects removed for clarity.
    */
-  private function reportErrorPayload() {
+  protected function reportErrorPayload() {
 
     $errorPayload = $this->message;
     unset($errorPayload['payload']);
