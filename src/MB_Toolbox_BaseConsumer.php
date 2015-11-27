@@ -114,6 +114,20 @@ abstract class MB_Toolbox_BaseConsumer
 
   }
 
+  /*
+   * logConsumption(): Log the status of processing a specific message element.
+   *
+   * @param string $targetName
+   */
+  protected function logConsumption($targetName = NULL) {
+
+    if ($targetName != NULL) {
+      echo '** Consuming ' . $targetName . ': ' . $this->message[$targetName];
+    } else {
+      echo $targetName . ' is not defined.', PHP_EOL;
+    }
+  }
+
   /**
    * Log payload with RabbitMQ objects removed for clarity.
    */
@@ -164,6 +178,9 @@ abstract class MB_Toolbox_BaseConsumer
   protected function queueStatus($targetQueue) {
 
     $queueStatus = $this->mbRabbitMQManagementAPI->queueStatus($targetQueue);
+    echo '- ' . $targetQueue . ' ready: ' . $queueMessages['ready'], PHP_EOL;
+    echo '- ' . $targetQueue . ' unacked: ' . $queueMessages['unacked'], PHP_EOL;
+
     return $queueStatus;
   }
 
@@ -184,5 +201,7 @@ abstract class MB_Toolbox_BaseConsumer
    * Process message from consumed queue.
    */
   abstract protected function process();
+  
+  
 
 }
