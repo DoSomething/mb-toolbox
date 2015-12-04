@@ -178,8 +178,8 @@ abstract class MB_Toolbox_BaseConsumer
   protected function queueStatus($targetQueue) {
 
     $queueStatus = $this->mbRabbitMQManagementAPI->queueStatus($targetQueue);
-    echo '- ' . $targetQueue . ' ready: ' . $queueMessages['ready'], PHP_EOL;
-    echo '- ' . $targetQueue . ' unacked: ' . $queueMessages['unacked'], PHP_EOL;
+    echo '- ' . $targetQueue . ' ready: ' . $queueStatus['ready'], PHP_EOL;
+    echo '- ' . $targetQueue . ' unacked: ' . $queueStatus['unacked'], PHP_EOL;
 
     return $queueStatus;
   }
