@@ -358,7 +358,7 @@ class MB_Toolbox
    * @return string $country
    *   A two letter country code.
    */
-  protected function countryFromTemplateName($emailTemplate) {
+  public function countryFromTemplateName($emailTemplate) {
 
     // Trap NULL values for country code. Ex: "mb-cgg2015-vote-"
     if (substr($emailTemplate, strlen($emailTemplate) - 1) == "-") {
