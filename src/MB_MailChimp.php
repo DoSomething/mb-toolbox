@@ -151,7 +151,8 @@ class MB_MailChimp
       }
 
       // Assign source interest group. Only support on main DoSomething Members List
-      if (isset($newSubscriber['source'])) {
+      // @todo: Support "id" as a variable. Perhaps a config setting keyed on countries / global.
+      if (isset($newSubscriber['source']) && isset($newSubscriber['user_country']) && strtoupper($newSubscriber['user_country']) == 'US') {
         $mergeVars['groupings'] = array(
           0 => array(
             'id' => 10657,  // DoSomething Memebers -> Import Source
