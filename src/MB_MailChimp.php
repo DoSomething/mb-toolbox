@@ -150,6 +150,16 @@ class MB_MailChimp
         );
       }
 
+      // Assign source interest group. Only support on main DoSomething Members List
+      if (isset($newSubscriber['source'])) {
+        $mergeVars['groupings'] = array(
+          0 => array(
+            'id' => 10657,  // DoSomething Memebers -> Import Source
+            'groups' => array($newSubscriber['source'])
+          ),
+        );
+      }
+
       $composedSubscriberList[$newSubscriberCount] = array(
         'email' => array(
           'email' => $newSubscriber['email']
