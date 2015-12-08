@@ -348,4 +348,29 @@ class MB_Toolbox
     return $subscriptionLink;
   }
 
+  /**
+   * countryFromTemplateName(): Extract country code from email template string. The last characters in string are
+   * country specific. If last character is "-" the template name is invalid, default to "US" as country.
+   *
+   * @param string $emailTemplate
+   *   The name of the template defined in the message transactional request.
+   *
+   * @return string $country
+   *   A two letter country code.
+   */
+  protected function countryFromTemplateName($emailTemplate) {
+
+    // Trap NULL values for country code. Ex: "mb-cgg2015-vote-"
+    if (substr($emailTemplate, strlen($emailTemplate) - 1) == "-") {
+      echo '- WARNING countryFromTemplateName() defaulting to country: US as template name was invalid. $emailTemplate: ' . $emailTemplate, PHP_EOL;
+      $country = 'US';
+    }
+    else {
+      $templateBits = explode('-', $emailTemplate);
+      $country = $templateBits[count($templateBits) - 1];
+    }
+
+    return $country;
+  }
+
 }
