@@ -122,7 +122,7 @@ abstract class MB_Toolbox_BaseConsumer
   protected function logConsumption($targetName = NULL) {
 
     if ($targetName != NULL) {
-      echo '** Consuming ' . $targetName . ': ' . $this->message[$targetName];
+      echo '** Consuming ' . $targetName . ': ' . $this->message[$targetName], PHP_EOL;
     } else {
       echo $targetName . ' is not defined.', PHP_EOL;
     }
