@@ -187,7 +187,7 @@ class MB_Toolbox_cURL
 
     // Only add token and cookie values to header when values are available and
     // the curlPOSTauth() method is making the POST request.
-    $northstarConfig = $this->mbConfig->getProperty('northstar_config');
+    $northstarConfig = $this->mbConfig->getProperty('northstar_config', FALSE);
     if (isset($this->auth->token) && $isAuth) {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
