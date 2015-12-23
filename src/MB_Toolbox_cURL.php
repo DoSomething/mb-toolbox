@@ -6,6 +6,8 @@
 namespace DoSomething\MB_Toolbox;
 
 use DoSomething\MBStatTracker\StatHat;
+use \Exception;
+
 
 /**
  * MB_Toolbox_cURL:
@@ -322,14 +324,8 @@ class MB_Toolbox_cURL
       exit(0);
     }
 
-    // @todo: Abstract into URL assembly function
-    $curlUrl = $dsDrupalAPIConfig['host'];
-    $port = $dsDrupalAPIConfig['port'];
-    if ($port > 0 && is_numeric($port)) {
-      $curlUrl .= ':' . (int) $port;
-    }
-
     // https://www.dosomething.org/api/v1/auth/login
+    $curlUrl  = $this->buildcURL($dsDrupalAPIConfig);
     $curlUrl .= self::DRUPAL_API . '/auth/login';
     $auth = $this->curlPOST($curlUrl, $post);
 
@@ -342,6 +338,29 @@ class MB_Toolbox_cURL
     }
 
     $this->auth = $auth;
+  }
+
+  /**
+   * buildURL - Common construction utility for URLs of API paths.
+   *
+   * @todo: Move to MB_Toolbox_cURL class.
+   *
+   * @param array $settings
+   *   "host" and "port" setting
+   */
+  public function buildcURL($settings) {
+
+    if (isset($settings['host'])) {
+      $curlUrl = $settings['host'];
+      $port = $settings['port'];
+      if ($port > 0 && is_numeric($port)) {
+        $curlUrl .= ':' . (int) $port;
+      }
+      return $curlUrl;
+    }
+    else {
+      throw new Exception('buildcURL required host setting missing.');
+    }
   }
 
 }
