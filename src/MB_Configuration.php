@@ -129,6 +129,7 @@ class MB_Configuration
               'durable' =>  $queueSetting->durable,
               'exclusive' =>  $queueSetting->exclusive,
               'auto_delete' =>  $queueSetting->auto_delete,
+              'routingKey' =>  $queueSetting->routing_key,
               'bindingKey' => $bindingKey,
             );
             if (isset($queueSetting->consume)) {
@@ -153,6 +154,7 @@ class MB_Configuration
             'exclusive' =>  $exchangeSettings->queues->$queue->exclusive,
             'auto_delete' =>  $exchangeSettings->queues->$queue->auto_delete,
             'bindingKey' => $exchangeSettings->queues->$queue->binding_key,
+            'routingKey' =>  $exchangeSettings->queues->$queue->routing_key,
           );
           if (isset($exchangeSettings->queues->$queue->consume)) {
             $config['consume'] = array(
@@ -168,6 +170,11 @@ class MB_Configuration
         }
       }
     }
+    // Default to first queue routingKey. Use MessageBroker->publish($payload,
+    // $routingKey = NULL, $deliveryMode = 1) to set key at the application level
+    // rather than the configuration level when the key needs to point different
+    // queues.
+    $config['routingKey'] = $config['queue'][0]['routingKey'];
 
     return $config;
   }
