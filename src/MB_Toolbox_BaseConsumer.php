@@ -103,15 +103,37 @@ abstract class MB_Toolbox_BaseConsumer
    */
   protected function consumeQueue($payload) {
 
+    $message = $payload->body;
     try {
-      $this->message = unserialize($payload->body);
+
+      if (isSerialized($message)) {
+        $this->message = unserialize($message);
+      }
+      else {
+        $this->message = json_decode($message);
+      }
       $this->message['original'] = $this->message;
       $this->message['payload'] = $payload;
     }
     catch(Exception $e) {
-      echo 'MB_Toolbox_BaseConsumer: Error unseralizing payload: consumeQueue(): ' . $e->getMessage();
+      echo 'MB_Toolbox_BaseConsumer: Error processing payload->body: consumeQueue(): ' . $e->getMessage();
     }
 
+  }
+  
+  /**
+   * Detect if the message is in seralized format.
+   *
+   * Originally the Message Broker system used seralization to format messages as all of the producers and
+   * consumers are PHP based applications. To support microservices in other languages a more genaral JSON
+   * format is being used for message formatting.
+   *
+   * @param string $message
+   *
+   * @return string
+   */
+  function isSerialized($message) {
+    return ($message == serialize(false) || @unserialize($message) !== false);
   }
 
   /*
