@@ -120,7 +120,7 @@ abstract class MB_Toolbox_BaseConsumer
     }
 
   }
-  
+
   /**
    * Detect if the message is in seralized format.
    *
