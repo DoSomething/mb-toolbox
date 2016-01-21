@@ -106,7 +106,7 @@ abstract class MB_Toolbox_BaseConsumer
     $message = $payload->body;
     try {
 
-      if (isSerialized($message)) {
+      if ($this->isSerialized($message)) {
         $this->message = unserialize($message);
       }
       else {
