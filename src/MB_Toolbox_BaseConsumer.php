@@ -132,7 +132,7 @@ abstract class MB_Toolbox_BaseConsumer
    *
    * @return string
    */
-  function isSerialized($message) {
+  protected function isSerialized($message) {
     return ($message == serialize(false) || @unserialize($message) !== false);
   }
 
