@@ -32,6 +32,13 @@ abstract class MB_Toolbox_BaseConsumer
   protected $messageBroker;
 
   /**
+   * Message Broker connection to RabbitMQ for Dead Letter messages.
+   *
+   * @var object
+   */
+  protected $messageBroker_deadLetter;
+
+  /**
    * The channel use by the Message Broker connection to RabbitMQ
    * @var object $channel
    */
@@ -87,6 +94,7 @@ abstract class MB_Toolbox_BaseConsumer
 
     $this->settings = $this->mbConfig->getProperty('generalSettings');
     $this->messageBroker = $this->mbConfig->getProperty($targetMBconfig);
+    $this->messageBroker_deadLetter = $this->mbConfig->getProperty('messageBroker_deadLetter');
     $this->statHat = $this->mbConfig->getProperty('statHat');
     $this->mbRabbitMQManagementAPI = $this->mbConfig->getProperty('mbRabbitMQManagementAPI');
 
@@ -204,6 +212,19 @@ abstract class MB_Toolbox_BaseConsumer
     echo '- ' . $targetQueue . ' unacked: ' . $queueStatus['unacked'], PHP_EOL;
 
     return $queueStatus;
+  }
+
+  /**
+   * deadLetter() - send message and related error to queue. Allows processing queues to be unblocked
+   * and log problem messages with details of the error resulting from the message.
+   */
+  public function deadLetter($message, $location, $error) {
+
+    $message['incidentDate'] = date(DATE_RFC2822);
+    $message['location'] = $location;
+    $message['error'] = $error;
+    $message = json_encode($message);
+    $this->messageBroker_deadLetter->publish($message, 'deadLetter');
   }
 
   /**
