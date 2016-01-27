@@ -118,7 +118,7 @@ abstract class MB_Toolbox_BaseConsumer
         $this->message = unserialize($message);
       }
       else {
-        $this->message = json_decode($message);
+        $this->message = json_decode($message, true);
       }
       $this->message['original'] = $this->message;
       $this->message['payload'] = $payload;
@@ -147,14 +147,32 @@ abstract class MB_Toolbox_BaseConsumer
   /*
    * logConsumption(): Log the status of processing a specific message element.
    *
-   * @param string $targetName
+   * @param array $targetNames
    */
-  protected function logConsumption($targetName = NULL) {
+  protected function logConsumption($targetNames = null) {
 
-    if ($targetName != NULL) {
-      echo '** Consuming ' . $targetName . ': ' . $this->message[$targetName], PHP_EOL;
+    if ($targetNames != null && is_array($targetNames)) {
+
+      echo '** Consuming ';
+      $targetNameFound = false;
+      foreach ($targetNames as $targetName) {
+        if (isset($this->message[$targetName])) {
+          if ($targetNameFound) {
+             echo ', ';
+          }
+          echo $targetName . ': ' . $this->message[$targetName];
+          $targetNameFound = true;
+        }
+      }
+      if ($targetNameFound) {
+        echo ' from: ' .  $this->message['user_country'] . ' doing: ' . $this->message['activity'], PHP_EOL;
+      }
+      else {
+        echo 'xx Target property not found in message.', PHP_EOL;
+      }
+
     } else {
-      echo $targetName . ' is not defined.', PHP_EOL;
+      echo 'Target names: ' . print_r($targetNames, true) . ' are not defined.', PHP_EOL;
     }
   }
 
@@ -244,7 +262,5 @@ abstract class MB_Toolbox_BaseConsumer
    * Process message from consumed queue.
    */
   abstract protected function process();
-  
-  
 
 }
