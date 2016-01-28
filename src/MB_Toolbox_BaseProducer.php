@@ -30,14 +30,6 @@ abstract class MB_Toolbox_BaseProducer
   protected $statHat;
 
   /**
-   * Message Broker Toolbox cURL - collection of utility cURL methods used
-   * by many of the Message Broker producer and consumer applications.
-   *
-   * @var object
-   */
-  protected $mbToolboxCURL;
-
-  /**
    * startTime - The date the request message started to be generated.
    *
    * @var string $startTime
