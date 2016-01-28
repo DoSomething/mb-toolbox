@@ -58,15 +58,18 @@ abstract class MB_Toolbox_BaseProducer
 
   /**
    * generatePayload: Basic format of message payload
+   *
+   * @param array
+   *   Values specific to the producer to be added to the base message values.
    */
-  protected function generatePayload() {
+  protected function generatePayload($data) {
 
-    // @todo: Use common message formatted for all producers and consumers in Message Broker system.
+    $payload = $data;
+
     // Ensures consistent message structure.
-    $payload = array(
-      'requested' => date('c'),
-      'startTime' => $this->startTime,
-    );
+    $payload['requested'] = date('c');
+    $payload['startTime'] = $this->startTime;
+
     return $payload;
   }
 
@@ -85,7 +88,7 @@ abstract class MB_Toolbox_BaseProducer
    */
   protected function produceMessage($message, $routingKey = '', $deliveryMode = 1) {
 
-    $payload = serialize($message);
+    $payload = json_encode($message);
     $this->messageBroker->publish($payload, $routingKey, $deliveryMode);
   }
   
