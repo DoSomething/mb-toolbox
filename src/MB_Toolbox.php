@@ -7,6 +7,7 @@ namespace DoSomething\MB_Toolbox;
 
 use DoSomething\MB_Toolbox\MB_Toolbox_cURL;
 use DoSomething\MBStatTracker\StatHat;
+use \Exception;
 
 class MB_Toolbox
 {
@@ -186,6 +187,47 @@ class MB_Toolbox
     }
 
     return array($result, $password);
+  }
+
+  /**
+   * Send GET request to Drupal /api/v1/users?parameters[email]=test@test.com end point to look up user
+   * account.
+   *
+   * Find a user
+   * https://github.com/DoSomething/phoenix/wiki/API#find-a-user
+   *
+   * @param string $email
+   *   Details about the user to lookup Drupal account.
+   *
+   * @return integer
+   *   UID of user account.
+   */
+  public function lookupDrupalUser($email) {
+
+    $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
+    $curlUrl = $dsDrupalAPIConfig['host'];
+    $port = $dsDrupalAPIConfig['port'];
+    if ($port != 0 && is_numeric($port)) {
+      $curlUrl .= ':' . (int) $port;
+    }
+
+    // Lookup Drupal NID
+    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' .  urlencode($email);
+    $result = $this->mbToolboxcURL->curlGETauth($curlUrl);
+
+    if (isset($result[0][0]->uid)) {
+      $drupalUID = (int) $result[0][0]->uid;
+      return $drupalUID;
+    }
+    elseif ($result[1] === 200) {
+      return false;
+    }
+    else {
+      echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
+      echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
+      throw new Exception('Error making curlGETauth request to ' . $curlUrl);
+    }
+
   }
 
   /**
