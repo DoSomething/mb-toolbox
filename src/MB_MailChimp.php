@@ -173,4 +173,28 @@ class MB_MailChimp
     return $composedSubscriberList;
   }
 
+  /**
+   * Gather account information froma specific list
+   *
+   * Reference: http://apidocs.mailchimp.com/api/2.0/lists/member-info.php
+   *
+   * @param string email
+   *   Target email address to lookup
+   * @param string $listID
+   *   The list to lookup the email address on.
+   */
+  public function memberInfo($email, $listID) {
+
+    $mailchimpStatus = $this->mailChimp->call("/lists/member-info", [
+      'id' => $listID,
+      'emails' => [
+        0 => [
+          'email' => $email
+        ]
+      ]
+    ]);
+
+    return $mailchimpStatus;
+  }
+
 }
