@@ -183,10 +183,9 @@ class MB_Toolbox
       echo 'ERROR - Invalid email address: ' . $user->email, PHP_EOL;
       $this->statHat->ezCount('MB_Toolbox: createDrupalUser - ERROR - Invalid email address');
       $result = FALSE;
-      $password = '';
     }
 
-    return array($result, $password);
+    return $result;
   }
 
   /**
