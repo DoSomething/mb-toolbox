@@ -263,7 +263,7 @@ class MB_Toolbox
     else {
       echo 'MB_Toolbox->getPasswordResetURL - ERROR: ' . print_r($result, TRUE), PHP_EOL;
       $this->statHat->ezCount('MB_Toolbox: getPasswordResetURL ERROR');
-      $resetUrl = NULL;
+      $resetUrl = null;
     }
     return $resetUrl;
   }
