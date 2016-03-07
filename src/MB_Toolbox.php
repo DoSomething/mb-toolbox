@@ -221,6 +221,13 @@ class MB_Toolbox
     elseif ($result[1] === 200) {
       return false;
     }
+    elseif ($result[1] === 302) {
+      echo 'Weird Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
+      echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
+      // Example: kelshaloftin@hotmail.com. Try doing a search from /admin/users to see
+      // the moved / redirect in action.
+      return false;
+    }
     else {
       echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
       echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
