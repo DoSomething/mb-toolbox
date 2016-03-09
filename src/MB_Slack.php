@@ -41,14 +41,13 @@ abstract class MB_Toolbox_Slack
 
     $this->mbConfig = MB_Configuration::getInstance();
 
-    $this->slackConfig = $this->mbConfig->getProperty('slack');
+    $this->slackConfig = $this->mbConfig->getProperty('slack_config');
     $this->statHat = $this->mbConfig->getProperty('statHat');
     $this->init();
   }
 
   /**
-   *
-   * @param 
+   * Create Slack object connection.
    */
   protected function init() {
 
@@ -56,20 +55,26 @@ abstract class MB_Toolbox_Slack
     // https://dosomething.slack.com/services/24691590965
     $settings = [
       'channel' => '#message-broker',
-      'username' => 'pris',
-      'icon' => 'http://img11.deviantart.net/cabe/i/2014/155/c/1/pris_of_blade_runner_by_legoras-d7l1wzz.jpg'
+      'username' => 'Pris',
+      'author_icon' => 'http://img11.deviantart.net/cabe/i/2014/155/c/1/pris_of_blade_runner_by_legoras-d7l1wzz.jpg',
+      'link_names' => true,
+      'allow_markdown' => true
     ];
     $this->slack = new Client($this->slackConfig['webhookURL']);
   }
   
   /**
+   * Send report to Slack.
    *
+   * $param string $to
+   *   Comma separated list of Slack channels ("#") and/or users ("@") to send message to.
    * @param string $message
+   * 'Array of message attachment options. https://github.com/maknz/slack#send-an-attachment-with-fields
    * 
    */
-  public function alert($to = '@dee', $message = 'Missing message') {
+  public function alert($to = '@dee', $message = []) {
 
-    $this->slack->to($to)->send($message);
+    $this->slack->to($to)->attach($message)->send();
   }
 
 }
