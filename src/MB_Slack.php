@@ -13,7 +13,7 @@ use \Exception;
 /*
  * MB_Toolbox_Slack():
  */
-abstract class MB_Toolbox_Slack
+class MB_Slack
 {
 
   /**
