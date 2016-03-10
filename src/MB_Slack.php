@@ -60,7 +60,7 @@ class MB_Slack
       'link_names' => true,
       'allow_markdown' => true
     ];
-    $this->slack = new Client($this->slackConfig['webhookURL']);
+    $this->slack = new Client($this->slackConfig['webhookURL_message-broker']);
   }
   
   /**
