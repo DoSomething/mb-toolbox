@@ -23,10 +23,10 @@ class MB_Slack
   protected $mbConfig;
 
   /**
-   * Slack connection
-   * @var object $slack
+   * Slack connection keys
+   * @var object $slackConfig
    */
-  protected $slack;
+  protected $slackConfig;
 
   /**
    * StatHat object for logging of activity
@@ -35,7 +35,7 @@ class MB_Slack
   protected $statHat;
 
   /**
-   * Constructor for MBC_Slack - 
+   * Constructor for MBC_Slack - gather config settings.
    */
   public function __construct() {
 
@@ -43,24 +43,24 @@ class MB_Slack
 
     $this->slackConfig = $this->mbConfig->getProperty('slack_config');
     $this->statHat = $this->mbConfig->getProperty('statHat');
-    $this->init();
   }
 
   /**
-   * Create Slack object connection.
+   *
    */
-  protected function init() {
+  private function lookupChannelKey($channelName) {
 
-    // Set in incoming webhooks configuration in Slack, here for reference
-    // https://dosomething.slack.com/services/24691590965
-    $settings = [
-      'channel' => '#message-broker',
-      'username' => 'Pris',
-      'author_icon' => 'http://img11.deviantart.net/cabe/i/2014/155/c/1/pris_of_blade_runner_by_legoras-d7l1wzz.jpg',
-      'link_names' => true,
-      'allow_markdown' => true
-    ];
-    $this->slack = new Client($this->slackConfig['webhookURL_message-broker']);
+    if ($channelName == 'niche_monitoring') {
+      $channelKey = $this->slackConfig['webhookURL_niche_monitoring'];
+    }
+    elseif ($channelName == 'after-school-internal') {
+      $channelKey = $this->slackConfig['webhookURL_after-school-internal'];
+    }
+    else {
+      $channelKey = $this->slackConfig['webhookURL_message-broker'];
+    }
+
+    return $channelKey;
   }
   
   /**
@@ -69,12 +69,17 @@ class MB_Slack
    * $param string $to
    *   Comma separated list of Slack channels ("#") and/or users ("@") to send message to.
    * @param string $message
-   * 'Array of message attachment options. https://github.com/maknz/slack#send-an-attachment-with-fields
-   * 
+   *   List of message attachment options. https://github.com/maknz/slack#send-an-attachment-with-fields
+   * @param string $channelNames
+   *   The name of the channel to send the message to.
    */
-  public function alert($to = '@dee', $message = []) {
+  public function alert($to = '@dee', $message = [], $channelNames) {
 
-    $this->slack->to($to)->attach($message)->send();
+    foreach ($channelNames as $channelName) {
+      $channelKey = $this->lookupChannelKey($channelName);
+      $slack = new Client($channelKey);
+      $slack->to($to)->attach($message)->send();
+    }
   }
 
 }
