@@ -66,15 +66,16 @@ class MB_Slack
   /**
    * Send report to Slack.
    *
-   * $param string $to
+   * $param array $to
    *   Comma separated list of Slack channels ("#") and/or users ("@") to send message to.
    * @param string $message
    *   List of message attachment options. https://github.com/maknz/slack#send-an-attachment-with-fields
-   * @param string $channelNames
+   * @param array $channelNames
    *   The name of the channel to send the message to.
    */
-  public function alert($to = '@dee', $message = [], $channelNames) {
+  public function alert($channelNames, $message, $tos = ['@dee']) {
 
+    $to = implode(',', $tos);
     foreach ($channelNames as $channelName) {
       $channelKey = $this->lookupChannelKey($channelName);
       $slack = new Client($channelKey);
