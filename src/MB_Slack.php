@@ -50,10 +50,10 @@ class MB_Slack
    */
   private function lookupChannelKey($channelName) {
 
-    if ($channelName == 'niche_monitoring') {
+    if ($channelName == '#niche_monitoring') {
       $channelKey = $this->slackConfig['webhookURL_niche_monitoring'];
     }
-    elseif ($channelName == 'after-school-internal') {
+    elseif ($channelName == '#after-school-internal') {
       $channelKey = $this->slackConfig['webhookURL_after-school-internal'];
     }
     else {
