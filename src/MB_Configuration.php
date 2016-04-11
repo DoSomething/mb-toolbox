@@ -122,8 +122,8 @@ class MB_Configuration
     if ($config['exchange']['type'] == "topic") {
       foreach ($exchangeSettings->queues as $queueSetting) {
         if (in_array($queueSetting->name, $targetQueues) || $targetQueues == NULL) {
-          foreach ($queueSetting->binding_patterns as $bindingKeyCount => $bindingKey) {
-            $config['queue'][$bindingKeyCount] = array(
+          foreach ($queueSetting->binding_patterns as $bindingKey) {
+            $config['queue'][] = array(
               'name' => $queueSetting->name,
               'passive' => $queueSetting->passive,
               'durable' =>  $queueSetting->durable,
