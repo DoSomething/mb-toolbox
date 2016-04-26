@@ -53,7 +53,7 @@ class MB_MobileCommons
   * @param string $target
   *   The type of account to check
   */
-  public function checkExistingSMS($user, &$existingStatus) {
+  public function checkExisting($user, &$existingStatus) {
 
     $mobilecommonsStatus = (array) $this->mobileCommons->profiles_get(array('phone_number' => $user['mobile']));
     if (!isset($mobilecommonsStatus['error'])) {
