@@ -61,13 +61,13 @@ class MB_MobileCommons
       echo($mobile . ' already a Mobile Commons user.' . PHP_EOL);
       if (isset($mobileCommonsStatus['profile']->status)) {
         $existingStatus['mobile-error'] = (string)$mobileCommonsStatus['profile']->status;
-        $this->statHat->ezCount('mbc-user-import: MBC_UserImport_Toolbox: checkExistingSMS: ' . $existingStatus['mobile-error'], 1);
+        $this->statHat->ezCount('MB_Toolbox: MB_MobileCommons checkExisting: ' . $existingStatus['mobile-error'], 1);
         // opted_out_source
         $existingStatus['mobile-acquired'] = (string)$mobileCommonsStatus['profile']->created_at;
       }
       else {
         $existingStatus['mobile-error'] = 'Existing account';
-        $this->statHat->ezCount('mbc-user-import: MBC_UserImport_Toolbox: checkExistingSMS: Existing account', 1);
+        $this->statHat->ezCount('MB_Toolbox: MB_MobileCommons checkExisting: Existing account', 1);
       }
       $existingStatus['mobile'] = $mobile;
       return $existingStatus;
@@ -76,7 +76,7 @@ class MB_MobileCommons
       $mobileCommonsError = $mobileCommonsStatus['error']->attributes()->{'message'};
       // via Mobile Commons API - "Invalid phone number" aka "number not found", the number is not from an existing user.
       if ($mobileCommonsError == 'Invalid phone number') {
-        $this->statHat->ezCount('mbc-user-import: MBC_UserImport_Toolbox: checkExistingSMS: Number does not exist', 1);
+        $this->statHat->ezCount('MB_Toolbox: MB_MobileCommons checkExisting: New number', 1);
         return false;
       }
     }
