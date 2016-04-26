@@ -1,4 +1,4 @@
- <?php
+<?php
 /**
  * Base class for classes within the Message Broker system to extend. Focused on consuming
  * messages from queues a RabbitMQ server.
@@ -39,15 +39,17 @@ class MB_Logging
   *
   * @param array $existing
   *   Values to submit for existing user log entry.
+  * @param string $origin
+  *   The name of the application that wants to log the existing user.
   */
-  public function logExisting($existing, $importUser) {
+  public function logExisting($existing, $origin) {
     
     if (isset($existing['email']) ||
         isset($existing['drupal-uid']) ||
         isset($existing['mobile'])) {
 
       $existing['origin'] = [
-        'name' => $importUser['origin'],
+        'name' => $origin,
         'processed' => time()
       ];
       $payload = serialize($existing);
