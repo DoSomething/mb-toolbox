@@ -4,7 +4,7 @@
  * messages from queues a RabbitMQ server.
  */
 
-namespace DoSomething\MB_MobileCommons;
+namespace DoSomething\MB_Toolbox;
 
 use DoSomething\MB_Toolbox\MB_Configuration;
 use \Exception;
