@@ -48,16 +48,17 @@ class MB_MobileCommons
  /**
   * Check for the existence of SMS (Mobile Commons) account.
   *
-  * @param array $user
-  *   Settings of user account to check against.
-  * @param string $target
-  *   The type of account to check
+  * @param array $mobile
+  *   The mobile number to check for existing account.
+  *
+  * @return string $existingStatus
+  *   Details of existing account or boolean false.
   */
-  public function checkExisting($user, &$existingStatus) {
+  public function checkExisting($mobile) {
 
-    $mobilecommonsStatus = (array) $this->mobileCommons->profiles_get(array('phone_number' => $user['mobile']));
+    $mobilecommonsStatus = (array) $this->mobileCommons->profiles_get(array('phone_number' => $mobile));
     if (!isset($mobilecommonsStatus['error'])) {
-      echo($user['mobile'] . ' already a Mobile Commons user.' . PHP_EOL);
+      echo($mobile . ' already a Mobile Commons user.' . PHP_EOL);
       if (isset($mobilecommonsStatus['profile']->status)) {
         $existingStatus['mobile-error'] = (string)$mobilecommonsStatus['profile']->status;
         $this->statHat->ezCount('mbc-user-import: MBC_UserImport_Toolbox: checkExistingSMS: ' . $existingStatus['mobile-error'], 1);
@@ -68,14 +69,15 @@ class MB_MobileCommons
         $existingStatus['mobile-error'] = 'Existing account';
         $this->statHat->ezCount('mbc-user-import: MBC_UserImport_Toolbox: checkExistingSMS: Existing account', 1);
       }
-      $existingStatus['mobile'] = $user['mobile'];
+      $existingStatus['mobile'] = $mobile;
+      return $existingStatus;
     }
     else {
       $mobileCommonsError = $mobilecommonsStatus['error']->attributes()->{'message'};
       // via Mobile Commons API - "Invalid phone number" aka "number not found", the number is not from an existing user.
-      if (!$mobileCommonsError == 'Invalid phone number') {
-        echo 'Mobile Common Error: ' . $mobileCommonsError, PHP_EOL;
-        $this->statHat->ezCount('mbc-user-import: MBC_UserImport_Toolbox: checkExistingSMS: Invalid phone number', 1);
+      if ($mobileCommonsError == 'Invalid phone number') {
+        $this->statHat->ezCount('mbc-user-import: MBC_UserImport_Toolbox: checkExistingSMS: Number does not exist', 1);
+        return false;
       }
     }
 
