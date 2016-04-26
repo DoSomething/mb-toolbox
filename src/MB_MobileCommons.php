@@ -40,23 +40,23 @@ class MB_MobileCommons
   public function __construct() {
 
     $this->mbConfig = MB_Configuration::getInstance();
-
-    $this->mobileCommons = $mbConfig->getProperty('mobileCommons');
     $this->statHat = $this->mbConfig->getProperty('statHat');
   }
 
  /**
   * Check for the existence of SMS (Mobile Commons) account.
   *
+  * @param object $connection
+  *   The connection object to Mobile Commons.
   * @param array $mobile
   *   The mobile number to check for existing account.
   *
   * @return string $existingStatus
   *   Details of existing account or boolean false.
   */
-  public function checkExisting($mobile) {
+  public function checkExisting($connection, $mobile) {
 
-    $mobileCommonsStatus = (array) $this->mobileCommons->profiles_get(array('phone_number' => $mobile));
+    $mobileCommonsStatus = (array) $connection->profiles_get(array('phone_number' => $mobile));
     if (!isset($mobileCommonsStatus['error'])) {
       echo($mobile . ' already a Mobile Commons user.' . PHP_EOL);
       if (isset($mobileCommonsStatus['profile']->status)) {
