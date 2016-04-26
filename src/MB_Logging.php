@@ -54,7 +54,7 @@ class MB_Logging
       ];
       $payload = serialize($existing);
       $this->mbLogging->publishMessage($payload);
-      $this->statHat->ezCount('mbc-user-import: MBC_UserImport_Toolbox: logExisting', 1);
+      $this->statHat->ezCount('MB_Toolbox: MB_Logging: logExisting', 1);
     }
   }
   
