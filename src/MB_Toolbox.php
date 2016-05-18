@@ -66,7 +66,7 @@ class MB_Toolbox
    * http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements
    *
    * @param string $targetCountyCode
-   *   Details about the user to create Drupal account for.
+   *  Country code to check.
    *
    * @return boolean/array $foundAffiliate
    *   Test if supplied country code is a DoSomething affiliate country the URL
