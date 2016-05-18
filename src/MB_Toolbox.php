@@ -146,8 +146,12 @@ class MB_Toolbox
         'user_registration_source' => isset($user->user_registration_source) ? $user->user_registration_source : '',
       );
 
+      // List of supported fields:
+      // https://github.com/DoSomething/phoenix/blob/dev/lib/modules/dosomething/
+      // dosomething_api/resources/member_resource.inc#L171-L179
+
       // Optional
-      if (isset($user->first_name) && $user->first_name != '') {
+      if (!empty($user->first_name)) {
         $post['first_name'] = $user->first_name;
       }
       if (isset($user->birthdate) && strpos($user->birthdate, '/') > 0 && strtotime($user->birthdate) != FALSE) {
@@ -159,8 +163,14 @@ class MB_Toolbox
       elseif (isset($user->birthdate_timestamp) && is_int($user->birthdate_timestamp)) {
         $post['birthdate'] = date('Y-m-d', $user->birthdate_timestamp);
       }
-      if (isset($user->last_name) && $user->last_name != '') {
+      if (!empty($user->last_name)) {
         $post['last_name'] = $user->last_name;
+      }
+      if (!empty($user->mobile)) {
+        $post['mobile'] = $user->mobile;
+      }
+      if (!empty($user->country)) {
+        $post['country'] = $user->country;
       }
 
       $ch = curl_init();
