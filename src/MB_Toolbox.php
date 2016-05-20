@@ -182,10 +182,12 @@ class MB_Toolbox
       }
       $drupalAPIUrl .= self::DRUPAL_API . '/users';
       $result = $this->mbToolboxcURL->curlPOST($drupalAPIUrl, $post);
-      $this->statHat->ezCount('MB_Toolbox: Requested createDrupalUser');
 
       if (is_array($result)) {
         $this->statHat->ezCount('MB_Toolbox: Requested createDrupalUser - existing user');
+      }
+      else {
+        $this->statHat->ezCount('MB_Toolbox: Requested createDrupalUser');
       }
 
     }
@@ -206,42 +208,56 @@ class MB_Toolbox
    * https://github.com/DoSomething/phoenix/wiki/API#find-a-user
    *
    * @param string $email
-   *   Details about the user to lookup Drupal account.
+   *   The email address to lookup the user account by.
+   * @param integer $mobile
+   *   The mobile number to lookup the user account by.
    *
    * @return integer
    *   UID of user account.
    */
-  public function lookupDrupalUser($email) {
+  public function lookupDrupalUser($email, $mobile = NULL) {
+
+    $targetAddress['email'] = $email;
+    if (isset($mobile)) {
+      $targetAddress['mobile'] = $mobile;
+    }
 
     $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
-    $curlUrl = $dsDrupalAPIConfig['host'];
+    $baseCurlUrl = $dsDrupalAPIConfig['host'];
     $port = $dsDrupalAPIConfig['port'];
     if ($port != 0 && is_numeric($port)) {
-      $curlUrl .= ':' . (int) $port;
+      $baseCurlUrl .= ':' . (int) $port;
     }
 
-    // Lookup Drupal NID
-    $curlUrl .= self::DRUPAL_API . '/users.json?parameters[email]=' .  urlencode($email);
-    $result = $this->mbToolboxcURL->curlGETauth($curlUrl);
+    foreach ($targetAddress as $medium => $address) {
 
-    if (isset($result[0][0]->uid)) {
-      $drupalUID = (int) $result[0][0]->uid;
-      return $drupalUID;
-    }
-    elseif ($result[1] === 200) {
-      return false;
-    }
-    elseif ($result[1] === 302) {
-      echo 'Weird Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
-      echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
-      // Example: kelshaloftin@hotmail.com. Try doing a search from /admin/users to see
-      // the moved / redirect in action.
-      return false;
-    }
-    else {
-      echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
-      echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
-      throw new Exception('Error making curlGETauth request to ' . $curlUrl);
+      // Lookup Drupal NID
+      $curlUrl = $baseCurlUrl . self::DRUPAL_API . '/users.json?parameters['.$medium.']=' .  urlencode($address);
+      $result = $this->mbToolboxcURL->curlGETauth($curlUrl);
+
+      if (isset($result[0][0]->uid)) {
+        $drupalUID = (int) $result[0][0]->uid;
+        return $drupalUID;
+      }
+      elseif ($result[1] === 200 && $medium == 'email' && count($targetAddress) > 1) {
+        continue;
+      }
+      elseif ($result[1] === 200) {
+        return false;
+      }
+      elseif ($result[1] === 302) {
+        echo 'Weird Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
+        echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
+        // Example: kelshaloftin@hotmail.com. Try doing a search from /admin/users to see
+        // the moved / redirect in action.
+        return false;
+      }
+      else {
+        echo 'Error making curlGETauth request to ' . $curlUrl, PHP_EOL;
+        echo 'Returned results: ' . print_r($result, TRUE), PHP_EOL;
+        throw new Exception('Error making curlGETauth request to ' . $curlUrl);
+      }
+
     }
 
   }
