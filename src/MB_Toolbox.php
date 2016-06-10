@@ -13,6 +13,7 @@ class MB_Toolbox
 {
 
   const DRUPAL_API = '/api/v1';
+  const NORTHSTAR = '/v1';
   const DEFAULT_USERNAME = 'Doer';
 
   /**
@@ -173,7 +174,6 @@ class MB_Toolbox
         $post['country'] = $user->country;
       }
 
-      $ch = curl_init();
       $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
       $drupalAPIUrl =  $dsDrupalAPIConfig['host'];
       $port = $dsDrupalAPIConfig['port'];
@@ -198,6 +198,24 @@ class MB_Toolbox
     }
 
     return $result;
+  }
+
+  /**
+   *
+   */
+  public function createNorthstarUser($user) {
+
+    $post = [];
+
+    $northstarAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
+    $northstarUrl =  $northstarAPIConfig['host'];
+    $port = $northstarAPIConfig['port'];
+    if ($port > 0 && is_numeric($port)) {
+      $northstarUrl .= ":{$port}";
+    }
+    $northstarUrl .= self::NORTHSTAR . '/register';
+    $result = $this->mbToolboxcURL->curlPOST($northstarUrl, $post);
+
   }
 
   /**
