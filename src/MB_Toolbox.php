@@ -205,17 +205,90 @@ class MB_Toolbox
    */
   public function createNorthstarUser($user) {
 
-    $post = [];
+    $northstarAPIConfig = $this->mbConfig->getProperty('northstar_config');
+    if (empty($northstarAPIConfig['host'])) {
+      throw new Exception('MB_Toolbox->createNorthstarUser() northstar_config missing host setting.');
+    }
 
-    $northstarAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
+    // Required - at least one of email or mobile must be set.
+     $requiredSet = false;
+    if (isset($user->email)) {
+      $post['email'] = $user->email;
+      $requiredSet = true;
+    }
+
+    if (isset($user->mobile)) {
+      $post['mobile'] = $user->mobile;
+      $requiredSet = true;
+    }
+
+    if (!$requiredSet) {
+      throw new Exception('MB_Toolbox->createNorthstarUser() Neither email or mobile value available. Failed to create user.');
+    }
+
+    // Optional fields that can be a part of a Northstar user document
+    // List of supported fields:
+    // https://github.com/DoSomething/northstar/blob/dev/documentation/endpoints/users.md#create-a-user
+    $supportedFields = [
+      'password',
+      'first_name',
+      'last_name',
+      'addr_street1',
+      'addr_street2',
+      'addr_city',
+      'addr_state',
+      'addr_zip',
+      'country', // two character country code
+      'language',
+      'source',
+      'race',
+      'religion',
+      'college_name',
+      'degree_type',
+      'major_name',
+      'hs_gradyear',
+      'hs_name',
+      'sat_math',
+      'sat_verbal',
+      'sat_writing',
+    ];
+
+    foreach($supportedFields as $field) {
+      if (isset($user->$field)) {
+        $post[$field] = $user->$field;
+      }
+    }
+
+    // Optional fields that require formatting
+    if (isset($user->birthdate) && strpos($user->birthdate, '/') > 0 && strtotime($user->birthdate) != FALSE) {
+      $post['birthdate'] = date('Y-m-d', strtotime($user->birthdate));
+    }
+    elseif (isset($user->birthdate) && is_int($user->birthdate)) {
+      $post['birthdate'] = date('Y-m-d', $user->birthdate);
+    }
+    elseif (isset($user->birthdate_timestamp) && is_int($user->birthdate_timestamp)) {
+      $post['birthdate'] = date('Y-m-d', $user->birthdate_timestamp);
+    }
+
     $northstarUrl =  $northstarAPIConfig['host'];
     $port = $northstarAPIConfig['port'];
     if ($port > 0 && is_numeric($port)) {
       $northstarUrl .= ":{$port}";
     }
-    $northstarUrl .= self::NORTHSTAR . '/register';
+    $northstarUrl .= self::NORTHSTAR . '/users';
     $result = $this->mbToolboxcURL->curlPOST($northstarUrl, $post);
 
+    if ($result[1] == 201) {
+      echo '- Northstar user created.', PHP_EOL;
+    }
+    elseif ($result[1] == 200) {
+      echo '- Northstar user updated.', PHP_EOL;
+    }
+    else {
+      throw new Exception('MB_Toolbox->createNorthstarUser() - Response Code: ' . $result[1] . ' Response: ' . print_r($result[0], true));
+    }
+
+    return $result;
   }
 
   /**
