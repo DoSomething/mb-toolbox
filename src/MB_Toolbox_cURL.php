@@ -200,7 +200,8 @@ class MB_Toolbox_cURL
         )
       );
     }
-    elseif (strpos($curlUrl, 'api.dosomething') !== FALSE && isset($northstarConfig['id']) && isset($northstarConfig['key'])) {
+    elseif (isset($northstarConfig['host']) && strpos($curlUrl, $northstarConfig['host']) !== FALSE &&
+            isset($northstarConfig['id']) && isset($northstarConfig['key'])) {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
