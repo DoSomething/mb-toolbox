@@ -373,14 +373,23 @@ class MB_Toolbox_cURL
    */
   private function isNorthstar($northstarConfig, $curlUrl) {
 
-    if (!empty($northstarConfig['host']) &&
-        strpos($curlUrl, $northstarConfig['host']) !== FALSE &&
-        !empty($northstarConfig['id']) &&
-        !empty($northstarConfig['key'])) {
-          return true;
+    // Confirm each of the required config settings are available
+    if (empty($northstarConfig['host'])) {
+      return false;
+    }
+    if (empty($northstarConfig['id'])) {
+      return false;
+    }
+    if (empty($northstarConfig['key'])) {
+      return false;
     }
 
-    return false;
+    // Validate cURL as being for Northstar
+    if (!strpos($curlUrl, $northstarConfig['host'])) {
+      return false;
+    }
+
+    return true;
   }
 
 }
