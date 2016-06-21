@@ -13,6 +13,7 @@ class MB_Toolbox
 {
 
   const DRUPAL_API = '/api/v1';
+  const NORTHSTAR_API_VERSION = 'v1';
   const DEFAULT_USERNAME = 'Doer';
 
   /**
@@ -173,7 +174,6 @@ class MB_Toolbox
         $post['country'] = $user->country;
       }
 
-      $ch = curl_init();
       $dsDrupalAPIConfig = $this->mbConfig->getProperty('ds_drupal_api_config');
       $drupalAPIUrl =  $dsDrupalAPIConfig['host'];
       $port = $dsDrupalAPIConfig['port'];
@@ -195,6 +195,97 @@ class MB_Toolbox
       echo 'ERROR - Invalid email address: ' . $user->email, PHP_EOL;
       $this->statHat->ezCount('MB_Toolbox: createDrupalUser - ERROR - Invalid email address');
       $result = FALSE;
+    }
+
+    return $result;
+  }
+
+  /**
+   *
+   */
+  public function createNorthstarUser($user) {
+
+    $northstarAPIConfig = $this->mbConfig->getProperty('northstar_config');
+    if (empty($northstarAPIConfig['host'])) {
+      throw new Exception('MB_Toolbox->createNorthstarUser() northstar_config missing host setting.');
+    }
+
+    // Required - at least one of email or mobile must be set.
+     $requiredSet = false;
+    if (!empty($user->email)) {
+      $post['email'] = $user->email;
+      $requiredSet = true;
+    }
+
+    if (!empty($user->mobile)) {
+      $post['mobile'] = $user->mobile;
+      $requiredSet = true;
+    }
+
+    if (!$requiredSet) {
+      throw new Exception('MB_Toolbox->createNorthstarUser() Neither email or mobile value available. Failed to create user.');
+    }
+
+    // Optional fields that can be a part of a Northstar user document
+    // List of supported fields:
+    // https://github.com/DoSomething/northstar/blob/dev/documentation/endpoints/users.md#create-a-user
+    $supportedFields = [
+      'password',
+      'first_name',
+      'last_name',
+      'addr_street1',
+      'addr_street2',
+      'addr_city',
+      'addr_state',
+      'addr_zip',
+      'country', // two character country code
+      'language',
+      'source',
+      'race',
+      'religion',
+      'college_name',
+      'degree_type',
+      'major_name',
+      'hs_gradyear',
+      'hs_name',
+      'sat_math',
+      'sat_verbal',
+      'sat_writing',
+    ];
+
+    foreach($supportedFields as $field) {
+      if (isset($user->$field)) {
+        $post[$field] = $user->$field;
+      }
+    }
+
+    // Optional fields that require formatting
+    if (isset($user->birthdate) && strtotime($user->birthdate)) {
+      $post['birthdate'] = date('Y-m-d', strtotime($user->birthdate));
+    }
+    elseif (isset($user->birthdate) && is_int($user->birthdate)) {
+      $post['birthdate'] = date('Y-m-d', $user->birthdate);
+    }
+    elseif (isset($user->birthdate_timestamp) && is_int($user->birthdate_timestamp)) {
+      $post['birthdate'] = date('Y-m-d', $user->birthdate_timestamp);
+    }
+
+    $northstarUrl =  $northstarAPIConfig['host'];
+    $port = $northstarAPIConfig['port'];
+    if ($port > 0 && is_numeric($port)) {
+      $northstarUrl .= ':' . $port;
+    }
+    $northstarUrl .= '/' . self::NORTHSTAR_API_VERSION . '/users';
+    $result = $this->mbToolboxcURL->curlPOST($northstarUrl, $post);
+
+    if ($result[1] === 201) {
+      echo '- Northstar user created.', PHP_EOL;
+    }
+    elseif ($result[1] === 200) {
+      echo '- Northstar user updated.', PHP_EOL;
+    }
+    else {
+      throw new Exception('MB_Toolbox->createNorthstarUser() - Response Code: ' . $result[1] . ' Response: ' . print_r($result[0], true));
     }
 
     return $result;
