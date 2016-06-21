@@ -30,7 +30,7 @@ abstract class MB_Toolbox_BaseProducer
   protected $statHat;
 
   /**
-   * startTime - The date the request message started to be generated. Note that the extending class
+   * The date the request message started to be generated. Note that the extending class
    * can set this value based on the final generatePayload() call.
    *
    * @var string $startTime
