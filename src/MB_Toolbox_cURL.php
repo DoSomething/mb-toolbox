@@ -200,8 +200,7 @@ class MB_Toolbox_cURL
         )
       );
     }
-    elseif (isset($northstarConfig['host']) && strpos($curlUrl, $northstarConfig['host']) !== FALSE &&
-            isset($northstarConfig['id']) && isset($northstarConfig['key'])) {
+    elseif (isNorthstar($northstarConfig, $curlUrl)) {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
@@ -362,6 +361,26 @@ class MB_Toolbox_cURL
     else {
       throw new Exception('buildcURL required host setting missing.');
     }
+  }
+
+  /**
+   * Test if the Northstar configuration settings are valid and the cURL is for Northstar.
+   *
+   * @param array $northstarConfig
+   *   Configuration settings for connecting to Northstar API
+   * @param string $curlUrl
+   *   A cURL path.
+   */
+  private function isNorthstar($northstarConfig, $curlUrl) {
+
+    if (!empty($northstarConfig['host']) &&
+        strpos($curlUrl, $northstarConfig['host']) !== FALSE &&
+        !empty($northstarConfig['id']) &&
+        !empty($northstarConfig['key'])) {
+          return true;
+    }
+
+    return false;
   }
 
 }
