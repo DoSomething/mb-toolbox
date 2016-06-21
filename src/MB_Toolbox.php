@@ -13,7 +13,7 @@ class MB_Toolbox
 {
 
   const DRUPAL_API = '/api/v1';
-  const NORTHSTAR = '/v1';
+  const NORTHSTAR_API_VERSION = 'v1';
   const DEFAULT_USERNAME = 'Doer';
 
   /**
@@ -212,12 +212,12 @@ class MB_Toolbox
 
     // Required - at least one of email or mobile must be set.
      $requiredSet = false;
-    if (isset($user->email)) {
+    if (!empty($user->email)) {
       $post['email'] = $user->email;
       $requiredSet = true;
     }
 
-    if (isset($user->mobile)) {
+    if (!empty($user->mobile)) {
       $post['mobile'] = $user->mobile;
       $requiredSet = true;
     }
@@ -260,7 +260,7 @@ class MB_Toolbox
     }
 
     // Optional fields that require formatting
-    if (isset($user->birthdate) && strpos($user->birthdate, '/') > 0 && strtotime($user->birthdate) != FALSE) {
+    if (isset($user->birthdate) && strtotime($user->birthdate)) {
       $post['birthdate'] = date('Y-m-d', strtotime($user->birthdate));
     }
     elseif (isset($user->birthdate) && is_int($user->birthdate)) {
@@ -273,15 +273,15 @@ class MB_Toolbox
     $northstarUrl =  $northstarAPIConfig['host'];
     $port = $northstarAPIConfig['port'];
     if ($port > 0 && is_numeric($port)) {
-      $northstarUrl .= ":{$port}";
+      $northstarUrl .= ':' . $port;
     }
-    $northstarUrl .= self::NORTHSTAR . '/users';
+    $northstarUrl .= '/' . self::NORTHSTAR_API_VERSION . '/users';
     $result = $this->mbToolboxcURL->curlPOST($northstarUrl, $post);
 
-    if ($result[1] == 201) {
+    if ($result[1] === 201) {
       echo '- Northstar user created.', PHP_EOL;
     }
-    elseif ($result[1] == 200) {
+    elseif ($result[1] === 200) {
       echo '- Northstar user updated.', PHP_EOL;
     }
     else {
