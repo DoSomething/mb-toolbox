@@ -288,7 +288,7 @@ class MB_Toolbox
       throw new Exception('MB_Toolbox->createNorthstarUser() - Response Code: ' . $result[1] . ' Response: ' . print_r($result[0], true));
     }
 
-    return $result;
+    return $result[0];
   }
 
   /**
