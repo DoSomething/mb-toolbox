@@ -85,8 +85,8 @@ abstract class MB_Toolbox_BaseConsumer
   /**
    * Constructor for MBC_BaseConsumer - all consumer applications should extend this base class.
    *
-   * @param string $targetMBconfig
-   *   The Message Broker object used to interface the RabbitMQ server exchanges and related queues.
+   * @param string $targetMBconfig The Message Broker object used to interface the RabbitMQ server
+   *                               exchanges and related queues.
    */
   public function __construct($targetMBconfig = 'messageBroker') {
 
@@ -108,6 +108,10 @@ abstract class MB_Toolbox_BaseConsumer
    *
    * @param array $payload
    *   The contents of the queue entry
+   *
+   * @return null
+   *
+   * @throws Exception
    */
   protected function consumeQueue($payload) {
 
@@ -148,6 +152,8 @@ abstract class MB_Toolbox_BaseConsumer
    * logConsumption(): Log the status of processing a specific message element.
    *
    * @param array $targetNames
+   *
+   * @return null
    */
   protected function logConsumption($targetNames = null) {
 
@@ -178,6 +184,8 @@ abstract class MB_Toolbox_BaseConsumer
 
   /**
    * Log payload with RabbitMQ objects removed for clarity.
+   *
+   * @return null
    */
   protected function reportErrorPayload() {
 
@@ -188,12 +196,14 @@ abstract class MB_Toolbox_BaseConsumer
   }
 
    /**
-   * Throddle the rate the consumer processes messages.
-   *
-   * @param integer $maxMessageRate
-   *   The number of messages to process per second before triggering a "pause". Higher values allow for greater
-   *   processing velosity / messages per second.
-   */
+    * Throddle the rate the consumer processes messages.
+    *
+    * @param integer $maxMessageRate
+    *   The number of messages to process per second before triggering a "pause". Higher values allow for greater
+    *   processing velosity / messages per second.
+    *
+    * @return null
+    */
   protected function throttle($maxMessageRate) {
 
     $this->throttleMessageCount++;
@@ -220,7 +230,7 @@ abstract class MB_Toolbox_BaseConsumer
    * @param string $targetQueue
    *   The name of the queue to gather the stats from.
    *
-   * return array $messageCount
+   * @return array $messageCount
    *   The numnber of messages in the "ready" and "unacked" state.
    */
   protected function queueStatus($targetQueue) {
@@ -235,6 +245,12 @@ abstract class MB_Toolbox_BaseConsumer
   /**
    * deadLetter() - send message and related error to queue. Allows processing queues to be unblocked
    * and log problem messages with details of the error resulting from the message.
+   *
+   * @param String $message The error message that triggered sending message to deadLetter queue.
+   * @param String $location Where the event took place.
+   * @param String $lerror The error message related to sending the message.
+   *
+   * @return null
    */
   public function deadLetter($message, $location, $error) {
 
@@ -248,19 +264,28 @@ abstract class MB_Toolbox_BaseConsumer
   /**
    * Sets values for processing based on contents of message from consumed queue.
    *
-   * @param array $message
-   *  The payload of the unseralized message being processed.
+   * @param array $message The payload of the unseralized message being processed.
+   *
+   * @return null
    */
   abstract protected function setter($message);
 
   /**
    * Evalue message settings to determine if the message can be processed.
+   *
+   * @param array $message The payload of the unseralized message being processed.
+   *
+   * @return null
    */
-  abstract protected function canProcess();
+  abstract protected function canProcess($message);
 
   /**
    * Process message from consumed queue.
+   *
+   * @param array $params Values used by the processing logic.
+   *
+   * @return null
    */
-  abstract protected function process();
+  abstract protected function process($params);
 
 }
