@@ -200,7 +200,7 @@ class MB_Toolbox_cURL
         )
       );
     }
-    elseif (isNorthstar($northstarConfig, $curlUrl)) {
+    elseif ($this->isNorthstar($northstarConfig, $curlUrl)) {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
           'Content-type: application/json',
