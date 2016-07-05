@@ -16,6 +16,7 @@
     "php": ">= 5.3.0",
     "dosomething/mb-stat-tracker": "v0.0.3",
     "dosomething/stathat": "1.*",
+    "dosomething/mobilecommons-php": "1.0.*",
     "drewm/mailchimp-api": "2.*",
     "richardfullmer/rabbitmq-management-api": "1.0.*"
   },
