@@ -9,3 +9,4 @@ tests/phpunit.xml
 
 # Ignor OSX system files
 .DS_Store
+.idea
