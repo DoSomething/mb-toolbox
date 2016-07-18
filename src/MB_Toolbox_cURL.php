@@ -84,6 +84,7 @@ class MB_Toolbox_cURL
 
     // Only add token and cookie values to header when values are available and
     // the curlPOSTauth() method is making the POST request.
+    $northstarConfig = $this->mbConfig->getProperty('northstar_config', FALSE);
     if (isset($this->auth->token) && $isAuth) {
       curl_setopt($ch, CURLOPT_HTTPHEADER,
         array(
@@ -92,6 +93,15 @@ class MB_Toolbox_cURL
           'X-CSRF-Token: ' . $this->auth->token,
           'Cookie: ' . $this->auth->session_name . '=' . $this->auth->sessid
         )
+      );
+    }
+    elseif ($this->isNorthstar($northstarConfig, $curlUrl)) {
+      curl_setopt($ch, CURLOPT_HTTPHEADER, [
+          'Content-type: application/json',
+          'Accept: application/json',
+          'X-DS-Application-Id: ' . $northstarConfig['id'],
+          'X-DS-REST-API-Key: ' . $northstarConfig['key'],
+        ]
       );
     }
     else {
