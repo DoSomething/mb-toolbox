@@ -395,7 +395,7 @@ class MB_Toolbox_cURL
     }
 
     // Validate cURL as being for Northstar
-    if (!strpos($curlUrl, $northstarConfig['host'])) {
+    if (strpos($curlUrl, $northstarConfig['host']) === false) {
       return false;
     }
 
