@@ -143,10 +143,10 @@ class MB_MailChimp
         $mergeVars = array(
           'UID' => isset($newSubscriber['uid']) ? $newSubscriber['uid'] : '',
           'FNAME' => isset($newSubscriber['fname']) ? $newSubscriber['fname'] : '',
-          'MMERGE3' => (isset($newSubscriber['fname']) && isset($newSubscriber['lname'])) ? $newSubscriber['fname'] . $newSubscriber['lname'] : '',
+          'MERGE3' => (isset($newSubscriber['fname']) && isset($newSubscriber['lname'])) ? $newSubscriber['fname'] . $newSubscriber['lname'] : '',
           'BDAY' => isset($newSubscriber['birthdate_timestamp']) ? date('m/d', $newSubscriber['birthdate_timestamp']) : '',
           'BDAYFULL' => isset($newSubscriber['birthdate_timestamp']) ? date('m/d/Y', $newSubscriber['birthdate_timestamp']) : '',
-          'MMERGE7' => isset($newSubscriber['mobile']) ? $newSubscriber['mobile'] : '',
+          'MOBILE' => isset($newSubscriber['mobile']) ? $newSubscriber['mobile'] : '',
         );
       }
 
