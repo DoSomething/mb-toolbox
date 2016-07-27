@@ -73,3 +73,15 @@ Settings from external services - Mailchimp
 - constructRabbitConfig($targetExchange, $targetQueues = NULL)
 - exchangeSettings($targetExchange)
 - gatherSettings($targetSetting)
+
+
+####Gulp Support
+Use path directly to gulp `./node_modules/.bin/gulp` or add alias to system config (`.bash_profile`) in alias gulp='./node_modules/.bin/gulp'
+
+###Linting
+- `gulp lint`
+
+###Linting
+- `gulp test`
+
+See `gulpfile.js` for configuration.

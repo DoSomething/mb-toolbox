@@ -5,9 +5,8 @@
 
 namespace DoSomething\MB_Toolbox;
 
-use DoSomething\MBStatTracker\StatHat;
+use DoSomething\StatHat\Client as StatHat;
 use \Exception;
-
 
 /**
  * MB_Toolbox_cURL:
@@ -117,6 +116,8 @@ class MB_Toolbox_cURL
     $results[0] = json_decode($jsonResult);
     $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+    
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: curlGET', 1);
 
     return $results;
   }
@@ -138,6 +139,7 @@ class MB_Toolbox_cURL
     }
 
     $results = $this->curlGET($curlUrl, TRUE);
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: curlGETauth', 1);
 
     return $results;
   }
@@ -168,6 +170,8 @@ class MB_Toolbox_cURL
     $results[0] = curl_exec($ch);
     $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+    
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: curlGETImage', 1);
 
     return $results;
   }
@@ -194,8 +198,8 @@ class MB_Toolbox_cURL
     curl_setopt($ch, CURLOPT_POST, count($post));
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, 3);
-    curl_setopt($ch,CURLOPT_TIMEOUT, 20);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 20);
 
     // Only add token and cookie values to header when values are available and
     // the curlPOSTauth() method is making the POST request.
@@ -237,6 +241,8 @@ class MB_Toolbox_cURL
     $results[0] = json_decode($jsonResult);
     $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+    
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: curlPOST', 1);
 
     return $results;
   }
@@ -260,6 +266,8 @@ class MB_Toolbox_cURL
     }
 
     $results = $this->curlPOST($curlUrl, $post, TRUE);
+    
+       $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: curlPOSTauth', 1);
 
     return $results;
   }
@@ -291,6 +299,8 @@ class MB_Toolbox_cURL
     $results[0] = json_decode($jsonResult);
     $results[1] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+    
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: curlDELETE', 1);
 
     return $results;
   }
@@ -312,6 +322,8 @@ class MB_Toolbox_cURL
     }
 
     $results = $this->curlDELETE($curlUrl, TRUE);
+    
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: curlDELETEauth', 1);
 
     return $results;
   }
@@ -348,6 +360,8 @@ class MB_Toolbox_cURL
     }
 
     $this->auth = $auth;
+    
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: authenticate', 1);
   }
 
   /**
@@ -366,6 +380,7 @@ class MB_Toolbox_cURL
       if ($port > 0 && is_numeric($port)) {
         $curlUrl .= ':' . (int) $port;
       }
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: buildcURL', 1);
       return $curlUrl;
     }
     else {
@@ -385,20 +400,25 @@ class MB_Toolbox_cURL
 
     // Confirm each of the required config settings are available
     if (empty($northstarConfig['host'])) {
+        $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: isNorthstar false', 1);
       return false;
     }
     if (empty($northstarConfig['id'])) {
+        $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: isNorthstar false', 1);
       return false;
     }
     if (empty($northstarConfig['key'])) {
+        $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: isNorthstar false', 1);
       return false;
     }
 
     // Validate cURL as being for Northstar
     if (strpos($curlUrl, $northstarConfig['host']) === false) {
+        $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: isNorthstar false', 1);
       return false;
     }
-
+    
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_cURL: isNorthstar true', 1);
     return true;
   }
 

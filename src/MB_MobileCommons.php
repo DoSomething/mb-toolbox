@@ -7,6 +7,7 @@
 namespace DoSomething\MB_Toolbox;
 
 use DoSomething\MB_Toolbox\MB_Configuration;
+use DoSomething\StatHat\Client as StatHat;
 use \Exception;
 
 /*

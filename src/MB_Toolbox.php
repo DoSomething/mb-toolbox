@@ -6,7 +6,7 @@
 namespace DoSomething\MB_Toolbox;
 
 use DoSomething\MB_Toolbox\MB_Toolbox_cURL;
-use DoSomething\MBStatTracker\StatHat;
+use DoSomething\StatHat\Client as StatHat;
 use \Exception;
 
 class MB_Toolbox

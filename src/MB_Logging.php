@@ -7,6 +7,7 @@
 namespace DoSomething\MB_Toolbox;
 
 use DoSomething\MB_Toolbox\MB_Configuration;
+use DoSomething\StatHat\Client as StatHat;
 use \Exception;
 
 /*
@@ -20,6 +21,13 @@ class MB_Logging
    * @var object $mbConfig
    */
   protected $mbConfig;
+    
+    /**
+     * Setting from external service to track activity - StatHat.
+     *
+     * @var object
+     */
+    private $statHat;
   
   /**
    * Constructor for MBC_Logging - gather config settings.

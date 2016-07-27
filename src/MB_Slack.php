@@ -8,6 +8,7 @@ namespace DoSomething\MB_Toolbox;
 
 use DoSomething\MB_Toolbox\MB_Configuration;
 use Maknz\Slack\Client as Client;
+use DoSomething\StatHat\Client as StatHat;
 use \Exception;
 
 /*
@@ -80,6 +81,7 @@ class MB_Slack
       $channelKey = $this->lookupChannelKey($channelName);
       $slack = new Client($channelKey);
       $slack->to($to)->attach($message)->send();
+        $this->statHat->ezCount('MB_Toolbox: MB_Slack: alert', 1);
     }
   }
 

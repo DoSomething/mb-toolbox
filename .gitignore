@@ -1,12 +1,14 @@
-# Ignore configuration files that may contain sensitive information.
-/vendor/
+# Ignore package files.
+/vendor
+/node_modules
 
-# Ignor composer working files
+# Ignore composer working files
 composer.lock
 
-# Ignor testing working files
+# Ignore testing working files
 tests/phpunit.xml
 
-# Ignor OSX system files
+# Ignore system files
 .DS_Store
 .idea
+npm-debug.log

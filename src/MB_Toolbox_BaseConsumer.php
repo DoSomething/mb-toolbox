@@ -7,8 +7,8 @@
 namespace DoSomething\MB_Toolbox;
 
 use DoSomething\MB_Toolbox\MB_Configuration;
+use DoSomething\StatHat\Client as StatHat;
 use \Exception;
-
 /*
  * MB_Toolbox_BaseConsumer(): Used to process the transactionalQueue
  * entries that match the campaign.*.* binding.
@@ -126,9 +126,11 @@ abstract class MB_Toolbox_BaseConsumer
       }
       $this->message['original'] = $this->message;
       $this->message['payload'] = $payload;
+        $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseConsumer: consumeQueue', 1);
     }
     catch(Exception $e) {
       echo 'MB_Toolbox_BaseConsumer: Error processing payload->body: consumeQueue(): ' . $e->getMessage();
+        $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseConsumer: consumeQueue Exception', 1);
     }
 
   }
@@ -145,6 +147,7 @@ abstract class MB_Toolbox_BaseConsumer
    * @return string
    */
   protected function isSerialized($message) {
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseConsumer: isSerialized', 1);
     return ($message == serialize(false) || @unserialize($message) !== false);
   }
 
@@ -176,9 +179,11 @@ abstract class MB_Toolbox_BaseConsumer
       else {
         echo 'xx Target property not found in message.', PHP_EOL;
       }
-
+    
+        $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseConsumer: logConsumption', 1);
     } else {
       echo 'Target names: ' . print_r($targetNames, true) . ' are not defined.', PHP_EOL;
+        $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseConsumer: logConsumption Error', 1);
     }
   }
 
@@ -193,6 +198,7 @@ abstract class MB_Toolbox_BaseConsumer
     unset($errorPayload['payload']);
     unset($errorPayload['original']);
     echo '-> message: ' . print_r($errorPayload, TRUE), PHP_EOL;
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseConsumer: reportErrorPayload', 1);
   }
 
    /**
@@ -218,7 +224,9 @@ abstract class MB_Toolbox_BaseConsumer
     if ($this->throttleMessageCount > $maxMessageRate) {
       sleep(MBC_BaseConsumer::THROTTLE_TIMEOUT);
 
-      echo '- Trottling activated, message rate: ' . $this->throttleMessageCount . '. Waiting for ' . MBC_BaseConsumer::THROTTLE_TIMEOUT . ' seconds.', PHP_EOL;
+      echo '- Trottling activated, message rate: ' . $this->throttleMessageCount . '. Waiting for ' .
+          MBC_BaseConsumer::THROTTLE_TIMEOUT . ' seconds.', PHP_EOL;
+        $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseConsumer: throttle', 1);
       $this->throttleMessageCount = 0;
     }
   }
@@ -259,6 +267,7 @@ abstract class MB_Toolbox_BaseConsumer
     $message['error'] = $error;
     $message = json_encode($message);
     $this->messageBroker_deadLetter->publish($message, 'deadLetter');
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseConsumer: deadLetter', 1);
   }
 
   /**
