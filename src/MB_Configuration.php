@@ -5,7 +5,8 @@
  */
 
 namespace DoSomething\MB_Toolbox;
-use DoSomething\MBStatTracker\StatHat;
+
+use \Exception;
 
 /**
  * MB_Configuration class - application-level configuration the Message Broker
@@ -29,6 +30,13 @@ class MB_Configuration
    * Instance of MB_Configuration class. Private and static to ensure access is only internal.
    */
   private static $instance;
+    
+    /**
+     * Setting from external service to track activity - StatHat.
+     *
+     * @var object
+     */
+    private $statHat;
 
   /**
    * Constructor - private to enforce singleton pattern. Only once instance of class allowed.

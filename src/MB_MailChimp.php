@@ -7,6 +7,7 @@
 namespace DoSomething\MB_Toolbox;
 
 use \Drewm\MailChimp;
+use DoSomething\StatHat\Client as StatHat;
 use \Exception;
 
 class MB_MailChimp
@@ -18,6 +19,19 @@ class MB_MailChimp
    * @var object
    */
   private $mailChimp;
+    
+    /**
+     * Singleton instance of MB_Configuration application settings and service objects
+     * @var object $mbConfig
+     */
+    protected $mbConfig;
+    
+    /**
+     * Setting from external service to track activity - StatHat.
+     *
+     * @var object
+     */
+    private $statHat;
 
   /**
    * Constructor for MBC_Mailchimp
@@ -27,6 +41,9 @@ class MB_MailChimp
    */
   public function __construct($apiKey) {
     $this->mailChimp = new MailChimp($apiKey);
+    
+      $this->mbConfig = MB_Configuration::getInstance();
+      $this->statHat = $this->mbConfig->getProperty('statHat');
   }
   
   /**
@@ -60,8 +77,8 @@ class MB_MailChimp
     elseif ($results == 0) {
       throw new Exception('Hmmm: No results returned from Mailchimp lists/batch-subscribe submisson. This often happens when the batch size is too large. ');
     }
-
-    // @todo: Add StatHat tracking point: submitBatchToMailChimp
+      
+      $this->statHat->ezCount('MB_Toolbox: MB_MailChimp: submitBatchSubscribe', 1);
 
     return $results;
   }
@@ -100,7 +117,7 @@ class MB_MailChimp
       throw new Exception('Hmmm: No results returned from Mailchimp lists/subscribe submission.');
     }
 
-    // @todo: Add StatHat tracking point: submitBatchToMailChimp
+    $this->statHat->ezCount('MB_Toolbox: MB_MailChimp: submitSubscribe', 1);
 
     return $results;
   }

@@ -2,8 +2,9 @@
 
 namespace DoSomething\MB_Toolbox;
 
-use DoSomething\MBStatTracker\StatHat;
 use RabbitMq\ManagementApi\Client as RabbitMqManagementApi;
+use DoSomething\StatHat\Client as StatHat;
+use \Exception;
 
 /**
  * MBC_UserRegistration class - functionality related to the Message Broker
@@ -89,6 +90,8 @@ class MB_RabbitMQManagementAPI
 
     $queueStats['ready'] = $queue['messages_ready'];
     $queueStats['unacked'] = $queue['messages_unacknowledged'];
+    
+      $this->statHat->ezCount('MB_Toolbox: MB_RabbitMQManagementAPI: queueStatus', 1);
 
     return $queueStats;
   }

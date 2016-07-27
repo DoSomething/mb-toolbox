@@ -5,8 +5,9 @@
 // Adjust to DoSomething\MBP_UserDigest when moved to MB_Toolbox
 namespace DoSomething\MB_Toolbox;
 
-use DoSomething\StatHat\Client as StatHat;
 use DoSomething\MB_Toolbox\MB_Configuration;
+use DoSomething\StatHat\Client as StatHat;
+use \Exception;
 
 /*
  * MBC_UserAPICampaignActivity.class.in: Used to process the transactionalQueue
@@ -21,6 +22,12 @@ abstract class MB_Toolbox_BaseProducer
    * @var object
    */
   protected $messageBroker;
+    
+    /**
+     * Singleton instance of MB_Configuration application settings and service objects
+     * @var object $mbConfig
+     */
+    protected $mbConfig;
 
   /**
    * StatHat object for logging of activity
@@ -83,6 +90,7 @@ abstract class MB_Toolbox_BaseProducer
 
     $payload = json_encode($message);
     $this->messageBroker->publish($payload, $routingKey, $deliveryMode);
+      $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseProducer: produceMessage', 1);
   }
   
 }
