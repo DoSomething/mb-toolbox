@@ -283,6 +283,9 @@ class MB_Toolbox
         $northstarUrl .= '/' . self::NORTHSTAR_API_VERSION . '/users';
         $result = $this->mbToolboxcURL->curlPOST($northstarUrl, $post);
 
+        if (empty($result[0]) || empty($result[0]->drupal_id)) {
+          throw new Exception('MB_Toolbox->createNorthstarUser() - No Drupal Id provided by Northstar: ' . $result[1] . ' Response: ' . print_r($result[0], true));
+        }
         if ($result[1] === 201) {
             echo '- Northstar user created.', PHP_EOL;
         } elseif ($result[1] === 200) {
