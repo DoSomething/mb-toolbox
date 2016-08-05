@@ -1,6 +1,6 @@
 {
   "name": "mb-toolbox",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "description": "Task runner for messagebroker-phplib library to run validation and code linting.",
   "engines": {
     "node": ">=4.4.x"
