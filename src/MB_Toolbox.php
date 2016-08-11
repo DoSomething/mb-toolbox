@@ -280,10 +280,10 @@ class MB_Toolbox
         if ($port > 0 && is_numeric($port)) {
             $northstarUrl .= ':' . $port;
         }
-        $northstarUrl .= '/' . self::NORTHSTAR_API_VERSION . '/users';
+        $northstarUrl .= '/' . self::NORTHSTAR_API_VERSION . '/users?create_drupal_user=true';
         $result = $this->mbToolboxcURL->curlPOST($northstarUrl, $post);
 
-        if (empty($result[0]) || empty($result[0]->drupal_id)) {
+        if (empty($result[0]) || empty($result[0]->data->drupal_id)) {
           throw new Exception('MB_Toolbox->createNorthstarUser() - No Drupal Id provided by Northstar: ' . $result[1] . ' Response: ' . print_r($result[0], true));
         }
         if ($result[1] === 201) {
