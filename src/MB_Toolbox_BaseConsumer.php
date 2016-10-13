@@ -257,21 +257,72 @@ abstract class MB_Toolbox_BaseConsumer
      * deadLetter() - send message and related error to queue. Allows processing queues to be unblocked
      * and log problem messages with details of the error resulting from the message.
      *
-     * @param String $message The error message that triggered sending message to deadLetter queue.
-     * @param String $location Where the event took place.
-     * @param String $lerror The error message related to sending the message.
+     * @param String $message
+     *   The error message that triggered sending message to deadLetter queue
+     * @param String $location
+     *   Where the event took place
+     * @param String|Exception $error
+     *   The error message related to sending the message.
      *
-     * @return null
+     * @return true
      */
     public function deadLetter($message, $location, $error)
     {
+        // Prepare new message to save to deadLetterQueue.
+        $deadLetter = [];
 
-        $message['incidentDate'] = date(DATE_RFC2822);
-        $message['location'] = $location;
-        $message['error'] = $error;
-        $message = json_encode($message);
-        $this->messageBroker_deadLetter->publish($message, 'deadLetter');
+        // Store original payload.
+        if (!empty($message['original'])) {
+          $deadLetter['message'] = $message['original'];
+        }
+
+        // Collect error metadata.
+        $deadLetter['metadata'] = [];
+        $metadata = &$deadLetter['metadata'];
+
+        // Save AMQP metadata if present.
+        if (!empty($message['payload']) && $message['payload'] instanceof AMQPMessage) {
+          $metadata['amqp'] = [];
+          $metadata['amqp']['exchange']     = $message['payload']->get('exchange');
+          $metadata['amqp']['routing_key']  = $message['payload']->get('routing_key');
+          $metadata['amqp']['consumer_tag'] = $message['payload']->get('consumer_tag');
+        }
+
+        // Date and location.
+        $metadata['error'] = [];
+        $metadata['error']['date'] = date(DATE_RFC2822);
+        $metadata['error']['locationText'] = $location;
+
+        // Accept exceptions
+        if ($error instanceof Exception) {
+          // Log exception type.
+          $metadata['error']['exception'] = get_class($error);
+
+          // Message
+          $metadata['error']['message'] = $error->getMessage();
+
+          // Stpre exception code when it's set expilitly.
+          if ($exceptionCode = $error->getCode()) {
+            $metadata['error']['exceptionCode'] = $exceptionCode;
+          }
+
+          // Exception trace is different from normal trace.
+          $metadata['error']['exceptionTrace'] = $error->getTraceAsString();
+        } else {
+          $metadata['error']['message'] = $error;
+        }
+
+        // Get backtrace as a string using output buffering,
+        // it's safer than var_export().
+        ob_start();
+        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $metadata['error']['trace'] = ob_get_clean();
+
+        $deadLetterJson = json_encode($deadLetter);
+        $this->messageBroker_deadLetter->publish($deadLetterJson, 'deadLetter');
         $this->statHat->ezCount('MB_Toolbox: MB_Toolbox_BaseConsumer: deadLetter', 1);
+
+        return true;
     }
 
     /**
