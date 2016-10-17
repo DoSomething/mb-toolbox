@@ -18,88 +18,88 @@ use \Exception;
 class MB_RabbitMQManagementAPI
 {
 
-    /**
-     * Collection of secret connection settings.
-     * @var array
-     */
-    private $credentials;
-  
-    /**
-     * RabbitMQ Management API.
-     * @var array
-     */
-    private $rabbitManagement;
-  
-    /**
-     * Target vertual host defined in RabbitMQ server.
-     * @var string $vhost
-     */
-    private $vhost;
-  
-    /**
-     * Singleton instance of MB_Configuration application settings and service objects
-     *
-     * @var object
-     */
-    private $mbConfig;
+  /**
+   * Collection of secret connection settings.
+   * @var array
+   */
+  private $credentials;
 
-    /**
-     * Setting from external service to track activity - StatHat.
-     *
-     * @var object
-     */
-    private $statHat;
+  /**
+   * RabbitMQ Management API.
+   * @var array
+   */
+  private $rabbitManagement;
 
-    /**
-     * Constructor for MB_RabbitMQManagementAPI
-     *
-     * @param array $config
-     *   Configuration settings from mb-config.inc
-     */
-    public function __construct($conig)
-    {
+  /**
+   * Target vertual host defined in RabbitMQ server.
+   * @var string $vhost
+   */
+  private $vhost;
 
-        $domain = 'http://' . $conig['domain'];
-        $port = $conig['port'];
-        $vhost = $conig['vhost'];
-        $this->vhost = $vhost;
-        $username = $conig['username'];
-        $password = $conig['password'];
+  /**
+   * Singleton instance of MB_Configuration application settings and service objects
+   *
+   * @var object
+   */
+  private $mbConfig;
 
-        if ($port > 0 && is_numeric($port)) {
-            $domain .= ':' . (int) $port;
-        }
+  /**
+   * Setting from external service to track activity - StatHat.
+   *
+   * @var object
+   */
+  private $statHat;
 
-        $this->rabbitManagement = new RabbitMqManagementApi(
-            null,
-            $domain,
-            $username,
-            $password
-        );
-    
-        $this->mbConfig = MB_Configuration::getInstance();
-        $this->statHat = $this->mbConfig->getProperty('statHat');
+  /**
+   * Constructor for MB_RabbitMQManagementAPI
+   *
+   * @param array $config
+   *   Configuration settings from mb-config.inc
+   */
+  public function __construct($conig)
+  {
+
+    $domain = 'http://' . $conig['domain'];
+    $port = $conig['port'];
+    $vhost = $conig['vhost'];
+    $this->vhost = $vhost;
+    $username = $conig['username'];
+    $password = $conig['password'];
+
+    if ($port > 0 && is_numeric($port)) {
+      $domain .= ':' . (int) $port;
     }
 
-    /**
-     * Gather queue status numbers: ready and unacked.
-     *
-     * @param string $queueName
-     *   The name of the queue to return stats for.
-     *
-     * @return array $queueStats
-     *   The current queue ready and unacked values.
-     */
-    public function queueStatus($queueName)
-    {
+    $this->rabbitManagement = new RabbitMqManagementApi(
+      null,
+      $domain,
+      $username,
+      $password
+    );
 
-        $queue = $this->rabbitManagement->queues()->get($this->vhost, $queueName);
+    $this->mbConfig = MB_Configuration::getInstance();
+    $this->statHat = $this->mbConfig->getProperty('statHat');
+  }
 
-        $queueStats['ready'] = $queue['messages_ready'];
-        $queueStats['unacked'] = $queue['messages_unacknowledged'];
-    
-        $this->statHat->ezCount('MB_Toolbox: MB_RabbitMQManagementAPI: queueStatus', 1);
+  /**
+   * Gather queue status numbers: ready and unacked.
+   *
+   * @param string $queueName
+   *   The name of the queue to return stats for.
+   *
+   * @return array $queueStats
+   *   The current queue ready and unacked values.
+   */
+  public function queueStatus($queueName)
+  {
 
-        return $queueStats;
-    }
+    $queue = $this->rabbitManagement->queues()->get($this->vhost, $queueName);
+
+    $queueStats['ready'] = $queue['messages_ready'];
+    $queueStats['unacked'] = $queue['messages_unacknowledged'];
+
+    $this->statHat->ezCount('MB_Toolbox: MB_RabbitMQManagementAPI: queueStatus', 1);
+
+    return $queueStats;
+  }
 }

@@ -24,13 +24,13 @@ class MB_MailChimp
      * @var object
      */
     private $mailChimp;
-    
+
     /**
      * Singleton instance of MB_Configuration application settings and service objects
      * @var object $mbConfig
      */
     protected $mbConfig;
-    
+
     /**
      * Setting from external service to track activity - StatHat.
      *
@@ -47,11 +47,11 @@ class MB_MailChimp
     public function __construct($apiKey)
     {
         $this->mailChimp = new MailChimp($apiKey);
-    
+
         $this->mbConfig = MB_Configuration::getInstance();
         $this->statHat = $this->mbConfig->getProperty('statHat');
     }
-  
+
   /**
    * Make batch signup submission to MailChimp list: lists/batch-subscribe
    *
@@ -83,7 +83,7 @@ class MB_MailChimp
         } elseif ($results == 0) {
             throw new Exception('Hmmm: No results returned from Mailchimp lists/batch-subscribe submisson. This often happens when the batch size is too large. ');
         }
-      
+
         $this->statHat->ezCount('MB_Toolbox: MB_MailChimp: submitBatchSubscribe', 1);
 
         return $results;
@@ -116,7 +116,7 @@ class MB_MailChimp
                 'replace_interests' => false,
                 'send_welcome' => false,
             ]);
-    
+
         // Trap errors
         if (isset($results['error'])) {
             throw new Exception('Call to lists/subscribe returned error response: ' . $results['name'] . ': ' .  $results['error']);
@@ -128,7 +128,7 @@ class MB_MailChimp
 
         return $results;
     }
-  
+
     /**
    * Format email list to meet MailChimp API requirements for batchSubscribe
    *
