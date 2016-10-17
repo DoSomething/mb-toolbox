@@ -19,178 +19,178 @@ use \Exception;
 class MB_Configuration
 {
 
-    /**
-     * All Message Broker configuration settings - the source of truth.
-     *
-     * @var array
-     */
-    private $configSettings = [];
+  /**
+   * All Message Broker configuration settings - the source of truth.
+   *
+   * @var array
+   */
+  private $configSettings = [];
 
-    /**
-     * Instance of MB_Configuration class. Private and static to ensure access is only internal.
-     */
-    private static $instance;
-    
-    /**
-     * Setting from external service to track activity - StatHat.
-     *
-     * @var object
-     */
-    private $statHat;
+  /**
+   * Instance of MB_Configuration class. Private and static to ensure access is only internal.
+   */
+  private static $instance;
 
-    /**
-     * Constructor - private to enforce singleton pattern. Only once instance of class allowed.
-     *
-     * Protected constructor to prevent creating a new instance of the *Singleton* via the
-     * `new` operator from outside of the class.
-     *
-     * See: http://www.phptherightway.com/pages/Design-Patterns.html
-     */
-    private function __construct()
-    {
+  /**
+   * Setting from external service to track activity - StatHat.
+   *
+   * @var object
+   */
+  private $statHat;
+
+  /**
+   * Constructor - private to enforce singleton pattern. Only once instance of class allowed.
+   *
+   * Protected constructor to prevent creating a new instance of the *Singleton* via the
+   * `new` operator from outside of the class.
+   *
+   * See: http://www.phptherightway.com/pages/Design-Patterns.html
+   */
+  private function __construct()
+  {
+  }
+
+  /**
+   * Private clone method to prevent cloning of the instance of the
+   * *Singleton* instance.
+   *
+   * The magic method __clone() is declared as private to prevent cloning of an instance
+   * of the class via the clone operator.
+   */
+  private function __clone()
+  {
+  }
+
+  /**
+   * Static method to limit instantiation of class to only one object.
+   */
+  public static function getInstance()
+  {
+    if (empty(self::$instance)) {
+      self::$instance = new MB_Configuration();
     }
+    return self::$instance;
+  }
 
-    /**
-     * Private clone method to prevent cloning of the instance of the
-     * *Singleton* instance.
-     *
-     * The magic method __clone() is declared as private to prevent cloning of an instance
-     * of the class via the clone operator.
-     */
-    private function __clone()
-    {
+  /**
+   * Set property in MB_Configuration instance.
+   *
+   * @todo: Add locking to prevent adding / editing of settings after addition of configuration
+   * settings is complete.
+   *
+   * @param string $key
+   *   The name of the property.
+   * @param mixed $value
+   *   The value to store in the instance configSettings array object property.
+   */
+  public function setProperty($key, $value)
+  {
+    $this->configSettings[$key] = $value;
+  }
+
+  /**
+   * Get property in MB_Configuration instance.
+   *
+   * @param string $key
+   *   The name of property to get.
+   * @param boolean $notifyWarnings
+   *   Flag to enable / disable warning and traceback if property not found.
+   */
+  public function getProperty($key, $notifyWarnings = true)
+  {
+    if (!(isset($this->configSettings[$key])) && $notifyWarnings) {
+      echo 'MB_Configuration->getProperty() - Warning: "' . $key . '" not defined.', PHP_EOL;
+      $callers = debug_backtrace();
+      echo '- Called from: ' . $callers[1]['function'], PHP_EOL;
+      return false;
+    } elseif (!(isset($this->configSettings[$key]))) {
+      return false;
     }
+    return $this->configSettings[$key];
+  }
 
-    /**
-     * Static method to limit instantiation of class to only one object.
-     */
-    public static function getInstance()
-    {
-        if (empty(self::$instance)) {
-            self::$instance = new MB_Configuration();
-        }
-        return self::$instance;
-    }
+  /**
+   * Construct RabbitMQ config for connection to exchange and queue.
+   *
+   * @param string $targetExchange
+   *   The name of the exchange to include in the construction of $config
+   * @param string $targetQueues
+   *   The name of the queue(s) to include in the construction of $config
+   *
+   * @return array $config
+   *   All of the Message Broker configuration settings to make a connection to RabbitMQ.
+   */
+  public function constructRabbitConfig($targetExchange, $targetQueues = null)
+  {
 
-    /**
-     * Set property in MB_Configuration instance.
-     *
-     * @todo: Add locking to prevent adding / editing of settings after addition of configuration
-     * settings is complete.
-     *
-     * @param string $key
-     *   The name of the property.
-     * @param mixed $value
-     *   The value to store in the instance configSettings array object property.
-     */
-    public function setProperty($key, $value)
-    {
-        $this->configSettings[$key] = $value;
-    }
+    self::setProperty('configFile', self::_gatherSettings(CONFIG_PATH . '/mb_config.json'));
+    $exchangeSettings = $this->exchangeSettings($targetExchange);
 
-    /**
-     * Get property in MB_Configuration instance.
-     *
-     * @param string $key
-     *   The name of property to get.
-     * @param boolean $notifyWarnings
-     *   Flag to enable / disable warning and traceback if property not found.
-     */
-    public function getProperty($key, $notifyWarnings = true)
-    {
-        if (!(isset($this->configSettings[$key])) && $notifyWarnings) {
-            echo 'MB_Configuration->getProperty() - Warning: "' . $key . '" not defined.', PHP_EOL;
-            $callers = debug_backtrace();
-            echo '- Called from: ' . $callers[1]['function'], PHP_EOL;
-            return false;
-        } elseif (!(isset($this->configSettings[$key]))) {
-            return false;
-        }
-        return $this->configSettings[$key];
-    }
+    $config['exchange'] = array(
+      'name' => $exchangeSettings->name,
+      'type' => $exchangeSettings->type,
+      'passive' => $exchangeSettings->passive,
+      'durable' => $exchangeSettings->durable,
+      'auto_delete' => $exchangeSettings->auto_delete,
+    );
 
-    /**
-     * Construct RabbitMQ config for connection to exchange and queue.
-     *
-     * @param string $targetExchange
-     *   The name of the exchange to include in the construction of $config
-     * @param string $targetQueues
-     *   The name of the queue(s) to include in the construction of $config
-     *
-     * @return array $config
-     *   All of the Message Broker configuration settings to make a connection to RabbitMQ.
-     */
-    public function constructRabbitConfig($targetExchange, $targetQueues = null)
-    {
-
-        self::setProperty('configFile', self::_gatherSettings(CONFIG_PATH . '/mb_config.json'));
-        $exchangeSettings = $this->exchangeSettings($targetExchange);
-
-        $config['exchange'] = array(
-            'name' => $exchangeSettings->name,
-            'type' => $exchangeSettings->type,
-            'passive' => $exchangeSettings->passive,
-            'durable' => $exchangeSettings->durable,
-            'auto_delete' => $exchangeSettings->auto_delete,
-        );
-
-        if ($config['exchange']['type'] == "topic") {
-            foreach ($exchangeSettings->queues as $queueSetting) {
-                if (in_array($queueSetting->name, $targetQueues) || $targetQueues == null) {
-                    foreach ($queueSetting->binding_patterns as $bindingKey) {
-                        $config['queue'][] = array(
-                            'name' => $queueSetting->name,
-                            'passive' => $queueSetting->passive,
-                            'durable' =>  $queueSetting->durable,
-                            'exclusive' =>  $queueSetting->exclusive,
-                            'auto_delete' =>  $queueSetting->auto_delete,
-                            'routingKey' =>  $queueSetting->routing_key,
-                            'bindingKey' => $bindingKey,
-                        );
-                        if (isset($queueSetting->consume)) {
-                                    $config['consume'] = array(
-                                        'no_local' => $queueSetting->consume->no_local,
-                                        'no_ack' => $queueSetting->consume->no_ack,
-                                        'nowait' => $queueSetting->consume->nowait,
-                                        'exclusive' => $queueSetting->consume->exclusive,
-                                    );
-                        }
-                    }
-                }
+    if ($config['exchange']['type'] == "topic") {
+      foreach ($exchangeSettings->queues as $queueSetting) {
+        if (in_array($queueSetting->name, $targetQueues) || $targetQueues == null) {
+          foreach ($queueSetting->binding_patterns as $bindingKey) {
+            $config['queue'][] = array(
+              'name' => $queueSetting->name,
+              'passive' => $queueSetting->passive,
+              'durable' =>  $queueSetting->durable,
+              'exclusive' =>  $queueSetting->exclusive,
+              'auto_delete' =>  $queueSetting->auto_delete,
+              'routingKey' =>  $queueSetting->routing_key,
+              'bindingKey' => $bindingKey,
+            );
+            if (isset($queueSetting->consume)) {
+                  $config['consume'] = array(
+                    'no_local' => $queueSetting->consume->no_local,
+                    'no_ack' => $queueSetting->consume->no_ack,
+                    'nowait' => $queueSetting->consume->nowait,
+                    'exclusive' => $queueSetting->consume->exclusive,
+                  );
             }
+          }
+        }
+      }
+    } else {
+      foreach ($targetQueues as $queue) {
+        if (isset($exchangeSettings->queues->$queue->name)) {
+          $config['queue'][] = array(
+            'name' => $exchangeSettings->queues->$queue->name,
+            'passive' => $exchangeSettings->queues->$queue->passive,
+            'durable' =>  $exchangeSettings->queues->$queue->durable,
+            'exclusive' =>  $exchangeSettings->queues->$queue->exclusive,
+            'auto_delete' =>  $exchangeSettings->queues->$queue->auto_delete,
+            'bindingKey' => $exchangeSettings->queues->$queue->binding_key,
+            'routingKey' =>  $exchangeSettings->queues->$queue->routing_key,
+          );
+          if (isset($exchangeSettings->queues->$queue->consume)) {
+                $config['consume'] = array(
+                  'no_local' => $exchangeSettings->queues->$queue->consume->no_local,
+                  'no_ack' => $exchangeSettings->queues->$queue->consume->no_ack,
+                  'nowait' => $exchangeSettings->queues->$queue->consume->nowait,
+                  'exclusive' => $exchangeSettings->queues->$queue->consume->exclusive,
+                );
+          }
         } else {
-            foreach ($targetQueues as $queue) {
-                if (isset($exchangeSettings->queues->$queue->name)) {
-                    $config['queue'][] = array(
-                        'name' => $exchangeSettings->queues->$queue->name,
-                        'passive' => $exchangeSettings->queues->$queue->passive,
-                        'durable' =>  $exchangeSettings->queues->$queue->durable,
-                        'exclusive' =>  $exchangeSettings->queues->$queue->exclusive,
-                        'auto_delete' =>  $exchangeSettings->queues->$queue->auto_delete,
-                        'bindingKey' => $exchangeSettings->queues->$queue->binding_key,
-                        'routingKey' =>  $exchangeSettings->queues->$queue->routing_key,
-                    );
-                    if (isset($exchangeSettings->queues->$queue->consume)) {
-                              $config['consume'] = array(
-                                  'no_local' => $exchangeSettings->queues->$queue->consume->no_local,
-                                  'no_ack' => $exchangeSettings->queues->$queue->consume->no_ack,
-                                  'nowait' => $exchangeSettings->queues->$queue->consume->nowait,
-                                  'exclusive' => $exchangeSettings->queues->$queue->consume->exclusive,
-                              );
-                    }
-                } else {
-                    echo 'MB_Configuration->constructRabbitConfig(): Error - ' . $queue . ' settings not found.', PHP_EOL;
-                }
-            }
+          echo 'MB_Configuration->constructRabbitConfig(): Error - ' . $queue . ' settings not found.', PHP_EOL;
         }
-        // Default to first queue routingKey. Use MessageBroker->publish($payload,
-        // $routingKey = NULL, $deliveryMode = 1) to set key at the application level
-        // rather than the configuration level when the key needs to point different
-        // queues.
-        $config['routingKey'] = $config['queue'][0]['routingKey'];
-
-        return $config;
+      }
     }
+    // Default to first queue routingKey. Use MessageBroker->publish($payload,
+    // $routingKey = NULL, $deliveryMode = 1) to set key at the application level
+    // rather than the configuration level when the key needs to point different
+    // queues.
+    $config['routingKey'] = $config['queue'][0]['routingKey'];
+
+    return $config;
+  }
 
   /**
    * Gather all setting for a specific exchange
@@ -201,28 +201,28 @@ class MB_Configuration
    * @return array $settings
    *   The exchange settings in the format needed for a RabbitMQ connection.
    */
-    public function exchangeSettings($targetExchange)
-    {
+  public function exchangeSettings($targetExchange)
+  {
 
-        $settings = null;
-        if (isset($this->configSettings['configFile']->rabbit->exchanges)) {
-            foreach ($this->configSettings['configFile']->rabbit->exchanges as $exchange => $exchangeSettings) {
-                if ($exchange == $targetExchange) {
-                    $settings = $exchangeSettings;
-                }
-            }
-        } else {
-            echo 'Error - No exchange settings found.', PHP_EOL;
+    $settings = null;
+    if (isset($this->configSettings['configFile']->rabbit->exchanges)) {
+      foreach ($this->configSettings['configFile']->rabbit->exchanges as $exchange => $exchangeSettings) {
+        if ($exchange == $targetExchange) {
+          $settings = $exchangeSettings;
         }
-
-        // Trap exchange not found
-        if ($settings == null) {
-            echo 'MB_Configuration->exchangeSettings(): Error - ' . $targetExchange . ' not found in config settings.';
-            exit;
-        }
-
-        return $settings;
+      }
+    } else {
+      echo 'Error - No exchange settings found.', PHP_EOL;
     }
+
+    // Trap exchange not found
+    if ($settings == null) {
+      echo 'MB_Configuration->exchangeSettings(): Error - ' . $targetExchange . ' not found in config settings.';
+      exit;
+    }
+
+    return $settings;
+  }
 
   /*
    * gatherSettings(): Load "settings" section of mb_config.json into setting accessable by
@@ -231,29 +231,29 @@ class MB_Configuration
    * @param string $targetSetting
    *   Request value of specific setting.
    */
-    public function gatherSettings($targetSetting)
-    {
+  public function gatherSettings($targetSetting)
+  {
 
-        // Load settings if not already available
-        $config = self::getProperty('settings', false);
-        if (!($config)) {
-            $config = self::_gatherSettings(CONFIG_PATH . '/mb_config.json');
-            self::setProperty('settings', $config->settings);
-        }
-
-        // Optional, method can simply store settings values
-        $foundSetting = null;
-        if ($targetSetting != null) {
-            if (isset($config->settings->$targetSetting)) {
-                $foundSetting = $config->settings->$targetSetting;
-                unset($foundSetting->__comment);
-            } else {
-                $foundSetting = null;
-            }
-        }
-
-        return $foundSetting;
+    // Load settings if not already available
+    $config = self::getProperty('settings', false);
+    if (!($config)) {
+      $config = self::_gatherSettings(CONFIG_PATH . '/mb_config.json');
+      self::setProperty('settings', $config->settings);
     }
+
+    // Optional, method can simply store settings values
+    $foundSetting = null;
+    if ($targetSetting != null) {
+      if (isset($config->settings->$targetSetting)) {
+        $foundSetting = $config->settings->$targetSetting;
+        unset($foundSetting->__comment);
+      } else {
+        $foundSetting = null;
+      }
+    }
+
+    return $foundSetting;
+  }
 
   /**
    * Gather all Message Broker configuration settings from the defined source.
@@ -261,16 +261,16 @@ class MB_Configuration
    * @param string $source
    *   Source can be the path to a file or a URL to an endpoint.
    */
-    private static function _gatherSettings($source)
-    {
+  private static function _gatherSettings($source)
+  {
 
-        if (strpos('http://', $source) !== false) {
-            echo 'cURL sources are not currently supported.', PHP_EOL;
-        } elseif (file_exists($source)) {
-            $settings = json_decode(implode(file($source)));
-            return $settings;
-        } else {
-            echo 'Source: ' . $source . ' not found.', PHP_EOL;
-        }
+    if (strpos('http://', $source) !== false) {
+      echo 'cURL sources are not currently supported.', PHP_EOL;
+    } elseif (file_exists($source)) {
+      $settings = json_decode(implode(file($source)));
+      return $settings;
+    } else {
+      echo 'Source: ' . $source . ' not found.', PHP_EOL;
     }
+  }
 }
