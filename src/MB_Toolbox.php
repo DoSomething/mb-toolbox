@@ -276,10 +276,17 @@ class MB_Toolbox
         }
 
         $northstarUrl =  $northstarAPIConfig['host'];
-        $port = $northstarAPIConfig['port'];
-        if ($port > 0 && is_numeric($port)) {
-            $northstarUrl .= ':' . $port;
+
+        // Append port if exists.
+        if (!empty($northstarAPIConfig['port'])) {
+          $port = (int) $northstarAPIConfig['port'];
+          // Port is within allowed range:
+          // https://en.wikipedia.org/wiki/Port_(computer_networking)#Details
+          if ($port > 0 && $port < 65536) {
+              $northstarUrl .= ':' . $port;
+          }
         }
+
         $northstarUrl .= '/' . self::NORTHSTAR_API_VERSION . '/users?create_drupal_user=true';
         $result = $this->mbToolboxcURL->curlPOST($northstarUrl, $post);
 
