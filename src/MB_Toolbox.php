@@ -353,7 +353,7 @@ class MB_Toolbox
   }
 
   /**
-   * Parse Northstar user respons, throw exception on failure.
+   * Parse Northstar user response, throw exception on failure.
    */
   public function parseNorthstarUserResponse($response) {
     // Check response contains correct data.
