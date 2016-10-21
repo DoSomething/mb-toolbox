@@ -323,9 +323,9 @@ class MB_Toolbox
       $result = $this->mbToolboxcURL->curlGet($endpoint);
 
       try {
+        $northstarUser = $this->parseNorthstarUserResponse($result);
         echo '- User loaded from Northstar by email: '
           . $user->email . PHP_EOL;
-        $northstarUser = $this->parseNorthstarUserResponse($result);
         return $northstarUser;
       } catch (Exception $e) {
         echo '- Coundn\'t load user from Northstar by email: '
@@ -335,13 +335,13 @@ class MB_Toolbox
 
     // Lookup by phone.
     if (!empty($user->mobile)) {
-      echo '- User loaded from Northstar by mobile: '
-        . $user->mobile . PHP_EOL;
       $endpoint = $northstarUrl . 'users/mobile/' . $user->mobile;
       $result = $this->mbToolboxcURL->curlGet($endpoint);
 
       try {
         $northstarUser = $this->parseNorthstarUserResponse($result);
+        echo '- User loaded from Northstar by mobile: '
+          . $user->mobile . PHP_EOL;
         return $northstarUser;
       } catch (Exception $e) {
         echo '- Coundn\'t load user from Northstar by mobile: '
