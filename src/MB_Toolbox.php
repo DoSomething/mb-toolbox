@@ -218,7 +218,7 @@ class MB_Toolbox
     }
 
     // Required - at least one of email or mobile must be set.
-     $requiredSet = false;
+    $requiredSet = false;
     if (!empty($user->email)) {
       $post['email'] = $user->email;
       $requiredSet = true;
@@ -289,19 +289,101 @@ class MB_Toolbox
 
     $northstarUrl .= '/' . self::NORTHSTAR_API_VERSION . '/users?create_drupal_user=true';
     $result = $this->mbToolboxcURL->curlPOST($northstarUrl, $post);
+    return $this->parseNorthstarUserResponse($result);
+  }
 
-    if (empty($result[0]) || empty($result[0]->data->drupal_id)) {
-      throw new Exception('MB_Toolbox->createNorthstarUser() - No Drupal Id provided by Northstar: ' . $result[1] . ' Response: ' . print_r($result[0], true));
+  /**
+   * Lookup user on Northstar.
+   */
+  public function lookupNorthstarUser($user)
+  {
+    $northstarAPIConfig = $this->mbConfig->getProperty('northstar_config');
+    if (empty($northstarAPIConfig['host'])) {
+      throw new Exception('MB_Toolbox->lookupNorthstarUser() northstar_config missing host setting.');
     }
-    if ($result[1] === 201) {
-      echo '- Northstar user created.', PHP_EOL;
-    } elseif ($result[1] === 200) {
-      echo '- Northstar user updated.', PHP_EOL;
+
+    $northstarUrl =  $northstarAPIConfig['host'];
+
+    // Append port if exists.
+    if (!empty($northstarAPIConfig['port'])) {
+      $port = (int) $northstarAPIConfig['port'];
+      // Port is within allowed range:
+      // https://en.wikipedia.org/wiki/Port_(computer_networking)#Details
+      if ($port > 0 && $port < 65536) {
+        $northstarUrl .= ':' . $port;
+      }
+    }
+
+    // Api version.
+    $northstarUrl .= '/' . self::NORTHSTAR_API_VERSION . '/';
+
+    // Lookup by email.
+    if (!empty($user->email)) {
+      $endpoint = $northstarUrl . 'users/email/' . $user->email;
+      $result = $this->mbToolboxcURL->curlGet($endpoint);
+
+      try {
+        echo '- User loaded from Northstar by email: '
+          . $user->email . PHP_EOL;
+        $northstarUser = $this->parseNorthstarUserResponse($result);
+        return $northstarUser;
+      } catch (Exception $e) {
+        echo '- Coundn\'t load user from Northstar by email: '
+          . $user->email . PHP_EOL;
+      }
+    }
+
+    // Lookup by phone.
+    if (!empty($user->mobile)) {
+      echo '- User loaded from Northstar by mobile: '
+        . $user->mobile . PHP_EOL;
+      $endpoint = $northstarUrl . 'users/mobile/' . $user->mobile;
+      $result = $this->mbToolboxcURL->curlGet($endpoint);
+
+      try {
+        $northstarUser = $this->parseNorthstarUserResponse($result);
+        return $northstarUser;
+      } catch (Exception $e) {
+        echo '- Coundn\'t load user from Northstar by mobile: '
+          . $user->mobile . PHP_EOL;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Parse Northstar user response, throw exception on failure.
+   */
+  public function parseNorthstarUserResponse($response) {
+    // Check response contains correct data.
+    if (!is_array($response) || empty($response[0]) || empty($response[1])) {
+      throw new Exception(
+        '- Unexpected Northstar response:' . var_export($response, true)
+      );
+    }
+
+    // Check HTTP code.
+    list($user, $httpCode) = $response;
+    if ($httpCode === 201) {
+      echo '- Northstar user created.' . PHP_EOL;
+    } elseif ($httpCode === 200) {
+      echo '- Northstar user loaded or updated.' . PHP_EOL;
     } else {
-      throw new Exception('MB_Toolbox->createNorthstarUser() - Response Code: ' . $result[1] . ' Response: ' . print_r($result[0], true));
+      throw new Exception(
+        '- Unexpected Northstar http code:' . $httpCode
+        . 'user: ' . var_export($user, true)
+      );
     }
 
-    return $result[0];
+    // Check user user.
+    if (empty($user->data) || empty($user->data->id)) {
+      throw new Exception(
+        '- Unexpected user user:'. var_export($user->data, true)
+      );
+    }
+
+    return $user->data;
   }
 
   /**
