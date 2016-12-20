@@ -16,7 +16,7 @@
         "php": ">= 5.3.0",
         "dosomething/stathat": "2.*",
         "dosomething/mobilecommons-php": "1.0.*",
-        "drewm/mailchimp-api": "1.*",
+        "drewm/mailchimp-api": "2.*",
         "richardfullmer/rabbitmq-management-api": "1.0.*"
     },
     "require-dev": {
