@@ -53,46 +53,6 @@ class MB_MailChimp
   }
 
   /**
-   * Make single signup submission to MailChimp. Typically used for resubscribes.
-   *
-   * @param string $listId
-   *   A unique ID that defines what MailChimp list the batch should be added to
-   * @param array $composedItem
-   *   The the details of an email address to be submitted to MailChimp
-   *
-   * @return array
-   *   A list of the RabbitMQ queue entry IDs that have been successfully
-   *   submitted to MailChimp.
-   */
-  public function submitSubscribe($listId, $composedItem = [])
-  {
-
-    $results = $this->mailChimp->call("lists/subscribe",
-      [
-        'id' => $listID,
-        'email' => [
-          'email' => $composedItem['email']['email']
-        ],
-        'merge_vars' => $composedItem['merge_vars'],
-        'double_optin' => false,
-        'update_existing' => true,
-        'replace_interests' => false,
-        'send_welcome' => false,
-      ]);
-
-    // Trap errors
-    if (isset($results['error'])) {
-      throw new Exception('Call to lists/subscribe returned error response: ' . $results['name'] . ': ' .  $results['error']);
-    } elseif ($results == 0) {
-      throw new Exception('Hmmm: No results returned from Mailchimp lists/subscribe submission.');
-    }
-
-    $this->statHat->ezCount('MB_Toolbox: MB_MailChimp: submitSubscribe', 1);
-
-    return $results;
-  }
-
-  /**
    * Format email list to meet MailChimp API requirements for batchSubscribe
    *
    * @param string $listId
@@ -103,7 +63,7 @@ class MB_MailChimp
    * @return array
    *   Array of email addresses formatted to meet MailChimp API requirements.
    */
-  public function addSubscribers($listId, array $subscribers)
+  public function addSubscribersToBatch($listId, array $subscribers)
   {
     foreach ($subscribers as $subscriber) {
       if (isset($subscriber['birthdate']) && is_int($subscriber['birthdate'])) {
@@ -145,6 +105,8 @@ class MB_MailChimp
         isset($subscriber['user_country']) &&
         strtoupper($subscriber['user_country']) == 'US')
       {
+        // TODO: Interest groups.
+
         // $mergeVars['groupings'] = [
         //   0 => [
         //     'id' => 10657,  // DoSomething Memebers -> Import Source
@@ -156,11 +118,12 @@ class MB_MailChimp
       }
 
       $parameters = [
-        // 'status' => 'subscribed',
+        'status' => 'subscribed',
         'merge_vars' => $mergeVars,
       ];
 
-      $this->mailchimpLists->addOrUpdateMember($listId, $subscriber['email'], $parameters, true);
+      echo '- Addnig ' . $subscriber['email'] . ' to list ' . $listId . PHP_EOL;
+      $this->mailchimpLists->addMember($listId, $subscriber['email'], $parameters, true);
     }
 
   }
@@ -186,47 +149,54 @@ class MB_MailChimp
 
     // Wait for batch status response, max 5 minutes:
     echo 'Waiting for batch ' . $batch->id . ' results' . PHP_EOL;
-    // $counter = 0;
-    // $processed = false;
-    // $id = $batch->id;
-    // while (!$processed && $counter < 300) {
-    //   sleep(1);
-    //   $batch = $this->mailchimpLists->getBatchOperation($id);
-    //   // Apparently, sometimes, op is finished, but response_body_url is still
-    //   // not populated. So we'll just wait for response_body_url attribute.
-    //   $processed = !!$batch->response_body_url;
-    //   $counter++;
-    // }
-
-    // if (!$processed) {
-    //   throw new Exception('Batch: ' . $batch->id . ' took longer than 5 minutes to process' . PHP_EOL);
-    // }
-
-    // // Exit if no errors:
-    // if (!$batch->errored_operations) {
-    //   $this->statHat->ezCount('MB_Toolbox: MB_MailChimp: submitBatchSubscribe', 1);
-    // }
-
-    // Download results:
-    $batch->response_body_url = "http://127.0.0.1:8000/f5570f5c3c-response.tar.gz";
-    if (parse_url($batch->response_body_url, PHP_URL_SCHEME) !== 'http') {
-      throw new Exception('Batch: ' . $batch->id . ' uknkown schema: ' . $batch->response_body_url . PHP_EOL);
+    $counter = 0;
+    $processed = false;
+    $id = $batch->id;
+    while (!$processed && $counter < 300) {
+      sleep(1);
+      $batch = $this->mailchimpLists->getBatchOperation($id);
+      // Apparently, sometimes, op is finished, but response_body_url is still
+      // not populated. So we'll just wait for response_body_url attribute.
+      $processed = !!$batch->response_body_url;
+      $counter++;
     }
 
-    $targzfile = tempnam(sys_get_temp_dir(), __FILE__) . '.tar.gz';
-    $client = new \GuzzleHttp\Client();
-    $response = $client->request('GET', $batch->response_body_url, ['sink' => $targzfile]);
-    // $archive = new \PharData($targzfile);
-    // foreach($archive as $file) {
-    //         echo "$file\n";
-    // }
+    if (!$processed) {
+      throw new Exception('Batch: ' . $batch->id . ' took longer than 5 minutes to process' . PHP_EOL);
+    }
 
-    // $client = new \GuzzleHttp\Client(['base_uri' => $batch->response_body_url]);
-    // $results = fopen($results->response_body_url, "r");
+    // Exit if no errors:
+    if (!$batch->errored_operations) {
+      $this->statHat->ezCount('MB_Toolbox: MB_MailChimp: submitBatchSubscribe', 1);
+    }
 
-    // echo $data;
-    // die();
-    var_dump($archive, $targzfile); die();
+    // Download results:
+    try {
+      if (parse_url($batch->response_body_url, PHP_URL_SCHEME) !== 'https') {
+        throw new Exception('Batch: ' . $batch->id . ' uknkown schema: ' . $batch->response_body_url . PHP_EOL);
+      }
+
+      // Save to a temp file.
+      $targzfile = tempnam(sys_get_temp_dir(), __FILE__) . '.tar.gz';
+      $client = new \GuzzleHttp\Client();
+      $response = $client->request('GET', $batch->response_body_url, ['sink' => $targzfile]);
+
+      // Unzip it and decode it.
+      $archive = new \Archive_Tar($targzfile);
+      $jsonFile = $archive->listContent()[1];
+      $results = json_decode($archive->extractInString($jsonFile['filename']));
+      // Format responses.
+      $responses = [];
+      foreach ($results as $result) {
+        $responses[] = json_decode($response->response);
+      }
+      return [
+        'success' => !$batch->errored_operations,
+        'responses' => $responses,
+      ];
+    } catch (Exception $e) {
+      throw new Exception('Batch: ' . $batch->id . ' can\'t decode results:' . $e->getMessage() . PHP_EOL);
+    }
   }
 
 }
