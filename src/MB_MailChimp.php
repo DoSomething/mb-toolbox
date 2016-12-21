@@ -186,42 +186,47 @@ class MB_MailChimp
 
     // Wait for batch status response, max 5 minutes:
     echo 'Waiting for batch ' . $batch->id . ' results' . PHP_EOL;
-    $counter = 0;
-    $processed = false;
-    while (!$processed && $counter < 300) {
-      sleep(1);
-      $results = $this->mailchimpLists->getBatchOperation($batch->id);
-      $processed = !!$results->completed_at;
-      $counter++;
+    // $counter = 0;
+    // $processed = false;
+    // $id = $batch->id;
+    // while (!$processed && $counter < 300) {
+    //   sleep(1);
+    //   $batch = $this->mailchimpLists->getBatchOperation($id);
+    //   // Apparently, sometimes, op is finished, but response_body_url is still
+    //   // not populated. So we'll just wait for response_body_url attribute.
+    //   $processed = !!$batch->response_body_url;
+    //   $counter++;
+    // }
+
+    // if (!$processed) {
+    //   throw new Exception('Batch: ' . $batch->id . ' took longer than 5 minutes to process' . PHP_EOL);
+    // }
+
+    // // Exit if no errors:
+    // if (!$batch->errored_operations) {
+    //   $this->statHat->ezCount('MB_Toolbox: MB_MailChimp: submitBatchSubscribe', 1);
+    // }
+
+    // Download results:
+    $batch->response_body_url = "http://127.0.0.1:8000/f5570f5c3c-response.tar.gz";
+    if (parse_url($batch->response_body_url, PHP_URL_SCHEME) !== 'http') {
+      throw new Exception('Batch: ' . $batch->id . ' uknkown schema: ' . $batch->response_body_url . PHP_EOL);
     }
 
-    if (!$processed) {
-      throw new Exception('Batch: ' . $batch->id . ' took longer than 5 minutes to process' . PHP_EOL);
-    }
+    $targzfile = tempnam(sys_get_temp_dir(), __FILE__) . '.tar.gz';
+    $client = new \GuzzleHttp\Client();
+    $response = $client->request('GET', $batch->response_body_url, ['sink' => $targzfile]);
+    // $archive = new \PharData($targzfile);
+    // foreach($archive as $file) {
+    //         echo "$file\n";
+    // }
 
-    // Exit if no errors:
-    if (!$results->errored_operations) {
-      $this->statHat->ezCount('MB_Toolbox: MB_MailChimp: submitBatchSubscribe', 1);
-      return ['result' => true];
-    }
+    // $client = new \GuzzleHttp\Client(['base_uri' => $batch->response_body_url]);
+    // $results = fopen($results->response_body_url, "r");
 
-    // Download error messages results:
-    
-
-
-
-
-    echo '- MB_MailChimp->submitBatchToMailChimp: results: ' . print_r($response, true), PHP_EOL;
-
-    // Trap errors
-    if (isset($results['error'])) {
-      throw new Exception('Call to lists/batch-subscribe returned error response: ' . $results['name'] . ': ' .  $results['error']);
-    } elseif ($results == 0) {
-      throw new Exception('Hmmm: No results returned from Mailchimp lists/batch-subscribe submisson. This often happens when the batch size is too large. ');
-    }
-
-
-    return $results;
+    // echo $data;
+    // die();
+    var_dump($archive, $targzfile); die();
   }
 
 }
