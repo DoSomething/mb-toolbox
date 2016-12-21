@@ -6,7 +6,7 @@
 
 namespace DoSomething\MB_Toolbox;
 
-use \Drewm\MailChimp;
+use \Mailchimp\MailchimpLists;
 use DoSomething\StatHat\Client as StatHat;
 use \Exception;
 
@@ -19,11 +19,11 @@ class MB_MailChimp
 {
 
   /**
-   * External service MailChimp used to administer and send to emailing lists..
+   * External service MailChimp used to administer and send to emailing lists.
    *
    * @var object
    */
-  private $mailChimp;
+  private $mailchimpLists;
 
   /**
    * Singleton instance of MB_Configuration application settings and service objects
@@ -46,7 +46,7 @@ class MB_MailChimp
    */
   public function __construct($apiKey)
   {
-    $this->mailChimp = new MailChimp($apiKey);
+    $this->mailchimpLists = new MailchimpLists($apiKey);
 
     $this->mbConfig = MB_Configuration::getInstance();
     $this->statHat = $this->mbConfig->getProperty('statHat');
